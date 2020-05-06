@@ -155,7 +155,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Parser\cBinaryXFileParser.cpp" />
     <ClCompile Include="Parser\cTextXFileParser.cpp" />
     <ClCompile Include="Parser\sAnimationSet.cpp" />
     <ClCompile Include="Parser\sErrorMessageException.cpp" />
@@ -169,7 +168,6 @@
     <ClCompile Include="XFileParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Parser\cBinaryXFileParser.h" />
     <ClInclude Include="Parser\cTextXFileParser.h" />
     <ClInclude Include="Parser\sAnimationSet.h" />
     <ClInclude Include="Parser\sErrorMessageException.h" />

@@ -29,6 +29,11 @@ namespace ns_HoLin
 			return PrintOffendingLine("%s\n\n", "Error file not opened.");
 		}
 		std::clog << "Successfully opened file\n";
+		if (GetXFileHeader() == FALSE) {
+			std::clog << "Error reading header.\n";
+			return FALSE;
+		}
+		std::clog << "Success. Parsing x file.\n";
 		while (TRUE) {
 			if (GetChar()) {
 				if (IsWhiteSpace(this, (int)sfile.ch))
@@ -81,6 +86,68 @@ namespace ns_HoLin
 		if (sfile.bytes_read_from_file == 0)
 			endoffile = TRUE;
 		return FALSE;
+	}
+
+	BOOL cTextXFileParser::GetXFileHeader()
+	{
+		struct sXFileHeader
+		{
+			char magic_number[4];
+			char major[2];
+			char minor[2];
+			char format_type[4];
+			char float_size[4];
+			char pad;
+		};
+		sXFileHeader sxheader;
+		BOOL textfile = FALSE, mode32bit = FALSE;
+		DWORD datasize = sizeof(sXFileHeader) - sizeof(char);
+		DWORD bytesreceived = 0;
+		long s = 0;
+
+		if (GetChar() == FALSE) {
+			std::clog << "Error\n";
+			return FALSE;
+		}
+		std::clog << "Reading header.\n";
+		memset((void*)&sxheader, 0, sizeof(sXFileHeader));
+		if (memcpy_s((void*)&sxheader, datasize, (const void*)sfile.file_buffer, datasize) != 0) {
+			std::clog << "Error reading x file header.\n";
+			return FALSE;
+		}
+		std::clog << "Header read.\n" << (char*)&sxheader << '\n';
+		sfile.index_of_next_char_to_read += datasize;
+		s = ((long)sxheader.magic_number[0]) + ((long)sxheader.magic_number[1] << 8) + ((long)sxheader.magic_number[2] << 16) + ((long)sxheader.magic_number[3] << 24);
+		if (s != XOFFILE_FORMAT_MAGIC) {
+			std::clog << "Not an x file format.\n" << (const char*)&s << '\n';
+			return FALSE;
+		}
+		std::clog << "X file.\n";
+		s = ((long)sxheader.format_type[0]) + ((long)sxheader.format_type[1] << 8) + ((long)sxheader.format_type[2] << 16) + ((long)sxheader.format_type[3] << 24);
+		if (s != XOFFILE_FORMAT_TEXT) {
+			if (s == XOFFILE_FORMAT_BINARY) {
+				textfile = FALSE;
+				std::clog << "Error binary file.\n";
+				return FALSE;
+			}
+		}
+		else {
+			textfile = TRUE;
+			std::cout << "Text file.\n";
+		}
+		s = ((long)sxheader.float_size[0]) + ((long)sxheader.float_size[1] << 8) + ((long)sxheader.float_size[2] << 16) + ((long)sxheader.float_size[3] << 24);
+		if (s != XOFFILE_FORMAT_FLOAT_BITS_32) {
+			if (s == XOFFILE_FORMAT_FLOAT_BITS_64) {
+				mode32bit = FALSE;
+				std::clog << "64 bit floating point.\n";
+				return FALSE;
+			}
+		}
+		else {
+			mode32bit = TRUE;
+			std::cout << "32 bit floating point.\n";
+		}
+		return TRUE;
 	}
 
 	BOOL cTextXFileParser::GetTemplateName(char *buff, std::size_t blen)
@@ -1307,7 +1374,7 @@ namespace ns_HoLin
 		DWORD nVertexColors; // should equal number of polygons in mesh
 
 		if (pmesh == NULL)
-			return PrintOffendingLine("\n%s\n%\u %u\n", "Error no mesh declared.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Error no mesh declared.", linenumber, __LINE__);
 		if (GetUnsignedInteger(buff, blen, ';') == FALSE)
 			return FALSE;
 		nVertexColors = (DWORD)std::atoi(buff);

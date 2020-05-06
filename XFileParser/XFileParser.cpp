@@ -215,51 +215,6 @@ ns_HoLin::cTextXFileParser* OpenFileWithMeshFileName()
 	return p_io;
 }
 
-BOOL GetXFileHeader(ns_HoLin::cTextXFileParser *p_io, BOOL &textfile, BOOL &mode32bit)
-{
-	struct sXFileHeader
-	{
-		char magic_number[4];
-		char major[2];
-		char minor[2];
-		char format_type[4];
-		char float_size[4];
-		char pad;
-	};
-	sXFileHeader sxheader;
-	DWORD datasize = sizeof(sXFileHeader) - sizeof(char);
-	DWORD bytesreceived = 0;
-
-	memset((void*)&sxheader, 0, sizeof(sXFileHeader));
-	if (p_io->sfile.hfile == NULL) {
-		return FALSE;
-	}
-	std::cout << "Reading header.\n";
-	if (ReadFile(p_io->sfile.hfile, (LPVOID)&sxheader, datasize, &bytesreceived, NULL)) {
-		if (strstr((const char*)sxheader.magic_number, (const char*)"xof") == NULL) {
-			std::cout << "Not an x file format file.\n";
-			return FALSE;
-		}
-		if (strstr((const char*)sxheader.format_type, (const char*)"txt") != NULL) {
-			textfile = TRUE;
-			std::cout << "Text file.\n";
-		}
-		else if (strstr((const char*)sxheader.format_type, (const char*)"bin") != NULL) {
-			textfile = FALSE;
-			std::cout << "Binary file.\n";
-		}
-		if (strstr((const char*)sxheader.float_size, (const char*)"0032") != NULL) {
-			mode32bit = TRUE;
-			std::cout << "32 bit floating point.\n";
-		}
-		else if (strstr((const char*)sxheader.float_size, (const char*)"0064") != NULL) {
-			mode32bit = FALSE;
-			std::cout << "64 bit floating point.\n";
-		}
-	}
-	return TRUE;
-}
-
 BOOL ReadMeshFile(ns_HoLin::cTextXFileParser *p_io)
 {
 	BOOL textfile = TRUE;
@@ -267,25 +222,15 @@ BOOL ReadMeshFile(ns_HoLin::cTextXFileParser *p_io)
 	
 	if (p_io) {
 		if (*p_io) {
-			if (GetXFileHeader(p_io, textfile, mode32bit)) {
-				if (textfile) {
-					if (p_io->ParseFile()) {
-						std::clog << "File successfully parsed.\n";
-						PrintData(p_io);
-						return TRUE;
-					}
-					else {
-						std::cerr << "Error parsing x file.\n";
-					}
-				}
-				else {
-					std::cout << "Binary mode not supported at this time.\n";
-				}
+			if (p_io->ParseFile()) {
+				std::clog << "File successfully parsed.\n";
+				PrintData(p_io);
+				return TRUE;
+			}
+			else {
+				std::cerr << "Error parsing x file.\n";
 			}
 		}
-	}
-	else {
-		std::cerr << "Unable to open \'file.txt\'.\n";
 	}
 	return FALSE;
 }
