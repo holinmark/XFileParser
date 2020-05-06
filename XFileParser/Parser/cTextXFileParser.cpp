@@ -28,12 +28,9 @@ namespace ns_HoLin
 		if (sfile.hfile == nullptr) {
 			return PrintOffendingLine("%s\n\n", "Error file not opened.");
 		}
-		std::clog << "Successfully opened file\n";
 		if (GetXFileHeader() == FALSE) {
-			std::clog << "Error reading header.\n";
-			return FALSE;
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading header.", linenumber, __LINE__);
 		}
-		std::clog << "Success. Parsing x file.\n";
 		while (TRUE) {
 			if (GetChar()) {
 				if (IsWhiteSpace(this, (int)sfile.ch))
@@ -126,7 +123,6 @@ namespace ns_HoLin
 		}
 		else {
 			textfile = TRUE;
-			std::cout << "Text file.\n";
 		}
 		s = ((long)sxheader.float_size[0]) + ((long)sxheader.float_size[1] << 8) + ((long)sxheader.float_size[2] << 16) + ((long)sxheader.float_size[3] << 24);
 		if (s != XOFFILE_FORMAT_FLOAT_BITS_32) {

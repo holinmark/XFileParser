@@ -223,7 +223,6 @@ BOOL ReadMeshFile(ns_HoLin::cTextXFileParser *p_io)
 	if (p_io) {
 		if (*p_io) {
 			if (p_io->ParseFile()) {
-				std::clog << "File successfully parsed.\n";
 				PrintData(p_io);
 				return TRUE;
 			}
