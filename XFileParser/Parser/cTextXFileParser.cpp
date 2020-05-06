@@ -106,29 +106,22 @@ namespace ns_HoLin
 		long s = 0;
 
 		if (GetChar() == FALSE) {
-			std::clog << "Error\n";
 			return FALSE;
 		}
-		std::clog << "Reading header.\n";
 		memset((void*)&sxheader, 0, sizeof(sXFileHeader));
 		if (memcpy_s((void*)&sxheader, datasize, (const void*)sfile.file_buffer, datasize) != 0) {
-			std::clog << "Error reading x file header.\n";
-			return FALSE;
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading x file header.", linenumber, __LINE__);
 		}
-		std::clog << "Header read.\n" << (char*)&sxheader << '\n';
 		sfile.index_of_next_char_to_read += datasize;
 		s = ((long)sxheader.magic_number[0]) + ((long)sxheader.magic_number[1] << 8) + ((long)sxheader.magic_number[2] << 16) + ((long)sxheader.magic_number[3] << 24);
 		if (s != XOFFILE_FORMAT_MAGIC) {
-			std::clog << "Not an x file format.\n" << (const char*)&s << '\n';
-			return FALSE;
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Not an x file format.", linenumber, __LINE__);
 		}
-		std::clog << "X file.\n";
 		s = ((long)sxheader.format_type[0]) + ((long)sxheader.format_type[1] << 8) + ((long)sxheader.format_type[2] << 16) + ((long)sxheader.format_type[3] << 24);
 		if (s != XOFFILE_FORMAT_TEXT) {
 			if (s == XOFFILE_FORMAT_BINARY) {
 				textfile = FALSE;
-				std::clog << "Error binary file.\n";
-				return FALSE;
+				return PrintOffendingLine("\n%s\n%zu %u\n", "Error, binary x file format not supported.", linenumber, __LINE__);
 			}
 		}
 		else {
@@ -139,13 +132,11 @@ namespace ns_HoLin
 		if (s != XOFFILE_FORMAT_FLOAT_BITS_32) {
 			if (s == XOFFILE_FORMAT_FLOAT_BITS_64) {
 				mode32bit = FALSE;
-				std::clog << "64 bit floating point.\n";
-				return FALSE;
+				return PrintOffendingLine("\n%s\n%zu %u\n", "64 bit floating point not supported.", linenumber, __LINE__);
 			}
 		}
 		else {
 			mode32bit = TRUE;
-			std::cout << "32 bit floating point.\n";
 		}
 		return TRUE;
 	}
