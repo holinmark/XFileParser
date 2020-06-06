@@ -1527,7 +1527,7 @@ namespace ns_HoLin
 			std::string name("Mesh");
 			
 			CreateName(buff, blen);
-			sprintf_s(buff, blen, "%s_%zu", buff, p_mesh->number_of_mesh_created);
+			sprintf_s(buff, blen, "%s_%zu", buff, xfiledata.smeshlist.number_of_meshes);
 			name += buff;
 			p_mesh->name = std::move(name);
 		}
