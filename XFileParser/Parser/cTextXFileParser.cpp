@@ -29,6 +29,7 @@ namespace ns_HoLin
 			return PrintOffendingLine("%s\n\n", "Error file not opened.");
 		}
 		if (GetXFileHeader() == FALSE) {
+			sfile.Close();
 			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading header.", linenumber, __LINE__);
 		}
 		while (TRUE) {
@@ -47,19 +48,24 @@ namespace ns_HoLin
 						if (ExtractTemplates(buff, blen))
 							continue;
 					}
+					sfile.Close();
 					return PrintOffendingLine("\n%s \'%s\' %zu %u\n", "Error unknown string", buff, linenumber, __LINE__);
 				}
 				else {
+					sfile.Close();
 					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
 				}
 			}
 			if (endoffile) {
+				sfile.Close();
 				return TRUE;
 			}
 			else {
+				sfile.Close();
 				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
 			}
 		}
+		sfile.Close();
 		return FALSE;
 	}
 

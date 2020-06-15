@@ -9,10 +9,10 @@ namespace ns_HoLin
 
 	sMeshFaces::sMeshFaces(sMeshFaces &&other)
 	{
-		this->numofindices = other.numofindices;
+		numofindices = other.numofindices;
 		other.numofindices = 0;
-		this->facevertexindices.clear();
-		this->facevertexindices = std::move(other.facevertexindices);
+		facevertexindices.clear();
+		facevertexindices = std::move(other.facevertexindices);
 	}
 
 	sMeshFaces::~sMeshFaces()
@@ -22,9 +22,9 @@ namespace ns_HoLin
 
 	sMeshFaces& sMeshFaces::operator=(sMeshFaces &&other)
 	{
-		this->numofindices = other.numofindices;
+		numofindices = other.numofindices;
 		other.numofindices = 0;
-		this->facevertexindices = std::move(facevertexindices);
+		facevertexindices = std::move(other.facevertexindices);
 		return *this;
 	}
 
@@ -110,14 +110,14 @@ namespace ns_HoLin
 
 	sMesh::sMesh(sMesh &&other)
 	{
-		this->p_extra = nullptr;
-		this->pnextmesh = nullptr;
-		this->name.clear();
-		this->name = std::move(other.name);
-		this->vertices.clear();
-		this->vertices = std::move(other.vertices);
-		this->meshfaces = std::move(other.meshfaces);
-		this->p_extra = other.p_extra;
+		p_extra = nullptr;
+		pnextmesh = nullptr;
+		name.clear();
+		name = std::move(other.name);
+		vertices.clear();
+		vertices = std::move(other.vertices);
+		meshfaces = std::move(other.meshfaces);
+		p_extra = other.p_extra;
 		other.p_extra = nullptr;
 	}
 
@@ -128,19 +128,18 @@ namespace ns_HoLin
 
 	sMesh& sMesh::operator=(sMesh &&other)
 	{
-		this->name.clear();
-		this->name = std::move(other.name);
-		this->vertices.clear();
-		this->vertices = std::move(other.vertices);
-		this->meshfaces = std::move(other.meshfaces);
-		this->p_extra = other.p_extra;
+		name.clear();
+		name = std::move(other.name);
+		vertices.clear();
+		vertices = std::move(other.vertices);
+		meshfaces = std::move(other.meshfaces);
+		p_extra = other.p_extra;
 		other.p_extra = nullptr;
 		return *this;
 	}
 
 	void sMesh::Cleanup()
 	{
-		std::clog << "delete sMesh\n";
 		name.clear();
 		vertices.clear();
 		meshfaces.Cleanup();
