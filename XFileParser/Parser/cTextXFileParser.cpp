@@ -879,11 +879,11 @@ namespace ns_HoLin
 		((std::vector<float>*)plist)->emplace_back(value);
 		return TRUE;
 	}
-
-	BOOL cTextXFileParser::GetVector(char *buff, std::size_t blen, void *plist)
+	
+	BOOL cTextXFileParser::GetVectorBody(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVector"));
+		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVectorBody"));
 #endif
 		DirectX::XMFLOAT3 f;
 
@@ -903,6 +903,20 @@ namespace ns_HoLin
 			return FALSE;
 		f.z = (float)atof(buff);
 		((std::vector<DirectX::XMFLOAT3>*)plist)->emplace_back(f);
+		return TRUE;
+	}
+	
+	BOOL cTextXFileParser::GetVector(char *buff, std::size_t blen, void *plist)
+	{
+#ifdef FUNCTIONCALLSTACK
+		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVector"));
+#endif
+		if (GetNextToken('{') == FALSE)
+			return FALSE;
+		if (GetVectorBody(buff, blen, plist) == FALSE)
+			return FALSE;
+		if (GetNextToken('}') == FALSE)
+			return FALSE;
 		return TRUE;
 	}
 
@@ -1598,12 +1612,8 @@ namespace ns_HoLin
 				return TRUE;
 		}
 		else if (strcmp(buff, "Vector") == 0) {
-			if (GetNextToken('{')) {
-				if (GetVector(buff, blen, (void*)&xfiledata.sframeslist.GetLastSequence()->plastframe->vectors)) {
-					if (GetNextToken('}') == FALSE)
-						return FALSE;
-					return TRUE;
-				}
+			if (GetVector(buff, blen, (void*)&xfiledata.sframeslist.GetLastSequence()->plastframe->vectors)) {
+				return TRUE;
 			}
 		}
 		else if (strcmp(buff, "Mesh") == 0) {
