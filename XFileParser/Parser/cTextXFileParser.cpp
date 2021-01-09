@@ -26,11 +26,13 @@ namespace ns_HoLin
 		char buff[blen];
 
 		if (sfile.hfile == nullptr) {
-			return PrintOffendingLine("%s\n\n", "Error file not opened.");
+			std::clog << "Unable to open file.\n" << __LINE__ << '\n' << __FILE__ << '\n';
+			return FALSE;
 		}
 		if (GetXFileHeader() == FALSE) {
 			sfile.Close();
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading header.", linenumber, __LINE__);
+			std::clog << "Error reading header.\n" << linenumber << '\n' << __LINE__ << '\n';
+			return FALSE;
 		}
 		while (TRUE) {
 			if (GetChar()) {
@@ -1598,8 +1600,6 @@ namespace ns_HoLin
 		else if (strcmp(buff, "Vector") == 0) {
 			if (GetNextToken('{')) {
 				if (GetVector(buff, blen, (void*)&xfiledata.sframeslist.GetLastSequence()->plastframe->vectors)) {
-					if (GetNextToken(';') == FALSE)
-						return FALSE;
 					if (GetNextToken('}') == FALSE)
 						return FALSE;
 					return TRUE;
@@ -1726,7 +1726,7 @@ namespace ns_HoLin
 				if (GetNextInput(IsValidSeperator) == FALSE)
 					return FALSE;
 			}
-			((std::vector<float>*)v)->push_back((float)atof(buff));
+			((ns_HoLin::sTimedFloatKeys*)v)->tfkeys.push_back((float)atof(buff));
 			if (sfile.ch == ',')
 				continue;
 			else if (sfile.ch == ';') {
@@ -1757,7 +1757,7 @@ namespace ns_HoLin
 		if (VerifyToken(';') == FALSE)
 			return FALSE;
 		time_slot.time = (DWORD)atoi(buff);
-		if (GetFloatKeysBody(buff, blen, (void*)&time_slot.tfkeys) == FALSE)
+		if (GetFloatKeysBody(buff, blen, (void*)&time_slot) == FALSE)
 			return FALSE;
 		if (GetNextToken(';') == FALSE)
 			return FALSE;
@@ -1786,9 +1786,9 @@ namespace ns_HoLin
 		if (VerifyToken(';') == FALSE)
 			return FALSE;
 		number_of_keys = (DWORD)atoi(buff);
-		if (GetArray(buff, blen, (void*)&transform_data, number_of_keys, &cTextXFileParser::GetTimedFloatKeys) == FALSE)
+		if (GetArray(buff, blen, (void*)&p_anim_data->transformation_data, number_of_keys, &cTextXFileParser::GetTimedFloatKeys) == FALSE)
 			return FALSE;
-		p_anim_data->transformation_data.emplace_back(std::move(transform_data));
+		//p_anim_data->transformation_data = transform_data;
 		return TRUE;
 	}
 
