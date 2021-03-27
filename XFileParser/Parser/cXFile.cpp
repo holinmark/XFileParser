@@ -177,6 +177,7 @@ namespace ns_HoLin
 						file_type = BINARY_FILE;
 						break;
 					case XOFFILE_FORMAT_COMPRESSED:
+						file_type = ZIP_FILE;
 						return FALSE;
 					default:
 						std::cout << "Unknown\n";
