@@ -61,6 +61,8 @@ namespace ns_HoLin
 					btrack = std::any_cast<BOOL>(arguments_options[map_options[state_strings[0]]]);
 				if (this->ParseFile(btrack)) {
 					std::clog << "File parsed successfully.\n";
+					CloseHandle(hfile);
+					hfile = nullptr;
 					return TRUE;
 				}
 				else {
@@ -73,6 +75,8 @@ namespace ns_HoLin
 			catch (std::exception e) {
 				std::cerr << e.what() << '\n';
 			}
+			CloseHandle(hfile);
+			hfile = nullptr;
 		}
 		std::clog << "Error.\n";
 		return FALSE;
@@ -83,7 +87,10 @@ namespace ns_HoLin
 		if (file_name) {
 			openfile(file_name);
 			if (hfile) {
-				return this->ParseFile(FALSE);
+				BOOL r = this->ParseFile(FALSE);
+				CloseHandle(hfile);
+				hfile = nullptr;
+				return r;
 			}
 		}
 		return FALSE;
