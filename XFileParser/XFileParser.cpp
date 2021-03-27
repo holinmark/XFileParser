@@ -197,7 +197,7 @@ int wmain(DWORD argv, const wchar_t **argc)
 	ns_HoLin::cXFile xfile;
 
 #ifdef _WINDOWS
-	// Windows application
+	// Win32 application
 	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
 		std::cout << "Success.\n";
 		if (xfile.GetXFileType() == TEXT_FILE) {
