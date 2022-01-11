@@ -99,6 +99,7 @@ namespace ns_HoLin
 			delete p_skininfo;
 			p_skininfo = NULL;
 		}
+		list_of_vectors.clear();
 		list_of_matrices.clear();
 	}
 

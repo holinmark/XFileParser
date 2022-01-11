@@ -28,7 +28,7 @@ namespace ns_HoLin
 		functioncalls.history.clear();
 	}
 
-	BOOL cTextXFileParser::ParseFile(PHANDLE hfile, BOOL btrack)
+	BOOL cTextXFileParser::ParseFile(PHANDLE hfile, BOOL btrack, BOOL accumulate_data)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(std::string("ParseFile"));
@@ -36,6 +36,10 @@ namespace ns_HoLin
 		const std::size_t blen = 1024;
 		char buff[blen];
 		
+		if (accumulate_data) {
+			xfiledata.Cleanup();
+			sfile.Cleanup();
+		}
 		trackoutput = btrack;
 		sfile.SetFileHandle(hfile);
 		while (TRUE) {
@@ -171,8 +175,7 @@ namespace ns_HoLin
 			if (GetNextToken('{'))
 				return TRUE;
 		}
-		return PrintOffendingLine("\n%s%s%zu\n%u\n",
-			"Error buffer overload.", "\nLine : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%s%zu\n%u\n", "Error buffer overload.", "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetDigit(char *buff, std::size_t blen)
@@ -1472,6 +1475,11 @@ namespace ns_HoLin
 						}
 					}
 					return GetXSkinMeshHeader(buff, blen, p_mesh);
+				}
+				else if (strcmp(buff, "Vector") == 0) {
+					if (!this->GetVector(buff, blen, (void*)&p_mesh->p_extra->list_of_vectors)) {
+						return PrintOffendingLine("\n%s\n%zu\n%u\n", L"Error GetVector", linenumber, __LINE__);
+					}
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown word", buff, "Line : ", linenumber, __LINE__);

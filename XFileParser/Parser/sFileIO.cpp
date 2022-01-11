@@ -33,6 +33,10 @@ namespace ns_HoLin
 		endoffile = FALSE;
 	}
 
+	void cFileInput::Cleanup()
+	{
+	}
+
 	cFileInput::operator bool() const
 	{
 		return (bool)(*hfile != nullptr);

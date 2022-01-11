@@ -71,6 +71,7 @@ namespace ns_HoLin
 		ns_HoLin::sVertexDuplicationIndices sduplicates;
 		ns_HoLin::sAnimation_Data sanimation;
 		ns_HoLin::sSkinInfo *p_skininfo;
+		std::vector<DirectX::XMFLOAT3> list_of_vectors;
 		// if not empty, the first matrix applies to the mesh object
 		// other matrices that follow are instances, if any, of that mesh object
 		std::vector<DirectX::XMFLOAT4X4> list_of_matrices;

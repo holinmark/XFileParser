@@ -53,7 +53,7 @@ namespace ns_HoLin
 		
 		cTextXFileParser();
 		~cTextXFileParser();
-		BOOL ParseFile(PHANDLE, BOOL = FALSE);
+		BOOL ParseFile(PHANDLE, BOOL = FALSE, BOOL = FALSE);
 		explicit operator bool() const;
 		bool operator !() const;
 	private:

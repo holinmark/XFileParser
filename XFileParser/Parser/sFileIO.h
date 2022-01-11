@@ -22,6 +22,7 @@ namespace ns_HoLin
 	public:
 		cFileInput();
 		~cFileInput();
+		void Cleanup();
 		explicit operator bool() const;
 		BOOL MoveBufferIndex(BOOL);
 		char GetNextCharToProcess() { return ch; }
