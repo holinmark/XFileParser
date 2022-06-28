@@ -285,7 +285,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFrameTransformMatrix(char *buff, std::size_t blen, DirectX::XMFLOAT4X4 &matrix)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetTransformMatrix"));
+		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFrameTransformMatrix"));
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
