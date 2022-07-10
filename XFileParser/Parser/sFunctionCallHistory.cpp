@@ -4,9 +4,9 @@ namespace ns_HoLin
 {
 	std::vector<std::string> sFunctionCallHistory::history;
 
-	sFunctionCallHistory::sFunctionCallHistory(std::string currentfunction)
+	sFunctionCallHistory::sFunctionCallHistory(const char *current_function_name)
 	{
-		sFunctionCallHistory::history.emplace_back(currentfunction);
+		sFunctionCallHistory::history.emplace_back(std::move(std::string(current_function_name)));
 	}
 
 	sFunctionCallHistory::~sFunctionCallHistory()
@@ -16,11 +16,6 @@ namespace ns_HoLin
 		}
 	}
 
-	void sFunctionCallHistory::Insert(std::string_view name)
-	{
-		sFunctionCallHistory::history.emplace_back(name);
-	}
-	
 	BOOL sFunctionCallHistory::PrintHistoryLog(BOOL ret)
 	{
 		std::clog << "\nFunction history log\n";

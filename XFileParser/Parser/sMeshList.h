@@ -14,7 +14,7 @@ namespace ns_HoLin
 {
 	struct sMeshFaces
 	{
-		DWORD numofindices;
+		DWORD number_of_indices;
 		std::vector<std::vector<DWORD>> facevertexindices;
 
 		sMeshFaces();
@@ -60,7 +60,6 @@ namespace ns_HoLin
 		void Cleanup(HANDLE = NULL);
 	};
 
-	// This data structure hasn't been incorporated into the program but will in the future.
 	struct sMeshExtraAttributes
 	{
 		sMeshNormals meshnormals;
@@ -87,11 +86,10 @@ namespace ns_HoLin
 		std::vector<DirectX::XMFLOAT3> vertices;
 		sMeshFaces meshfaces;
 
-		// sMeshExtraAttributes structure goes here
+		// Extra mesh attributes
 		ns_HoLin::sMeshExtraAttributes *p_extra;
 		// pointer to the next mesh
 		ns_HoLin::sMesh *pnextmesh;
-		//static std::size_t number_of_mesh_created;
 
 		sMesh();
 		sMesh(sMesh&&);

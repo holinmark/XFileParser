@@ -4,13 +4,13 @@ namespace ns_HoLin
 {
 	sMeshFaces::sMeshFaces()
 	{
-		numofindices = 0;
+		number_of_indices = 0;
 	}
 
 	sMeshFaces::sMeshFaces(sMeshFaces &&other)
 	{
-		numofindices = other.numofindices;
-		other.numofindices = 0;
+		number_of_indices = other.number_of_indices;
+		other.number_of_indices = 0;
 		facevertexindices.clear();
 		facevertexindices = std::move(other.facevertexindices);
 	}
@@ -22,15 +22,15 @@ namespace ns_HoLin
 
 	sMeshFaces& sMeshFaces::operator=(sMeshFaces &&other)
 	{
-		numofindices = other.numofindices;
-		other.numofindices = 0;
+		number_of_indices = other.number_of_indices;
+		other.number_of_indices = 0;
 		facevertexindices = std::move(other.facevertexindices);
 		return *this;
 	}
 
 	void sMeshFaces::Cleanup(HANDLE hfile)
 	{
-		numofindices = 0;
+		number_of_indices = 0;
 		facevertexindices.clear();
 	}
 
@@ -48,7 +48,7 @@ namespace ns_HoLin
 		normals.clear();
 		facenormals.clear();
 	}
-	
+
 	sMeshVertexColors::~sMeshVertexColors()
 	{
 		Cleanup();

@@ -31,7 +31,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::ParseFile(PHANDLE hfile, BOOL btrack, BOOL accumulate_data)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("ParseFile"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		const std::size_t blen = 1024;
 		char buff[blen];
@@ -126,7 +126,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetTemplateName(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetTemplateName"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		buff[0] = '\0';
@@ -181,7 +181,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetDigit(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetDigit"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {
@@ -216,7 +216,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetSignedDigit(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetSignedDigit"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {
@@ -255,7 +255,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMatrixBody(char *buff, std::size_t blen, void *plist, DWORD row, DWORD col)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMatrixBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetFloat(buff, blen) == FALSE)
@@ -267,7 +267,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMatrix(char *buff, std::size_t blen, DirectX::XMFLOAT4X4 &matrix)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMatrix"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -285,7 +285,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFrameTransformMatrix(char *buff, std::size_t blen, DirectX::XMFLOAT4X4 &matrix)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFrameTransformMatrix"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -305,7 +305,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetReservedWord(char *buff, std::size_t blen, char token)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetReservedWord"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 		
@@ -341,7 +341,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetName(char *buff, std::size_t blen, char sep)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetName"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 		
@@ -411,7 +411,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetString(char *buff, std::size_t blen, char sep)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetString"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 
@@ -456,7 +456,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetColorRGBA(char *buff, std::size_t blen, DirectX::XMFLOAT4 &c)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetColorRGBA"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetFloat(buff, blen) == FALSE)
@@ -485,7 +485,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetColorRGB(char *buff, std::size_t blen, DirectX::XMFLOAT3 &c)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetColorRGB"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetFloat(buff, blen) == FALSE)
@@ -509,7 +509,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMaterialAttributes(char *buff, std::size_t blen, ns_HoLin::sMaterial *p_material)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMaterialAttributes"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (VerifyToken('{') == FALSE)
@@ -528,7 +528,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMaterialBody(char *buff, std::size_t blen, ns_HoLin::sMaterial *p_material)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMaterialBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetColorRGBA(buff, blen, p_material->facecolor) == FALSE)
@@ -583,7 +583,7 @@ namespace ns_HoLin
 	{
 		// This function is shared by GetSkinWeightsBody
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetUnsignedInteger"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -598,7 +598,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshMaterialListAttributes(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshMaterialListAttributes"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() == '{') {
@@ -633,7 +633,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshMaterialListBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshMaterialListBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD nmaterials = 0, number_of_face_indices = 0;
 
@@ -674,7 +674,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshMaterialList(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshMaterialList"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -689,7 +689,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMaterial(char *buff, std::size_t blen, ns_HoLin::sMaterial *p_material)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMaterial"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		memset((void*)buff, 0, blen);
@@ -707,7 +707,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetUnsignedInteger(char *buff, std::size_t blen, BOOL getnexttoken)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetUnsignedInteger"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 		
@@ -747,7 +747,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetExponent(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetExponent"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetSignedDigit(buff, blen)) {
@@ -763,7 +763,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFraction(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFraction"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 
@@ -798,7 +798,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetInteger(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetInteger"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
 
@@ -845,7 +845,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFloat(char *buff, std::size_t blen, BOOL getnexttoken)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFloat"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetSignedDigit(buff, blen)) {
@@ -863,7 +863,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFloat(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFloat"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		float value = 0.0;
 
@@ -877,7 +877,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetVectorBody(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVectorBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DirectX::XMFLOAT3 f;
 
@@ -903,7 +903,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetVector(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVector"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		if (GetNextToken('{') == FALSE)
 			return FALSE;
@@ -916,10 +916,9 @@ namespace ns_HoLin
 
 	BOOL cTextXFileParser::GetPolygon(char *buff, std::size_t blen, void *polygon)
 	{
-		// This function is shared by GetSkinWeightsBody
-		// and GetPolygons
+		// This function is shared by GetSkinWeightsBody and GetPolygons
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetPolygon"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -931,7 +930,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetPolygons(char *buff, std::size_t blen, void *polygons)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetPolygons"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_vertices_in_polygon = 0;
 		std::vector<DWORD> polygon_indices;
@@ -960,7 +959,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFaces(char *buff, std::size_t blen, ns_HoLin::sMeshFaces &meshfaces)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFaces"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_faces = 0;
 		std::size_t number_of_indices = 0;
@@ -978,7 +977,7 @@ namespace ns_HoLin
 				if (f.size() > 0)
 					number_of_indices += f.size();
 			}
-			meshfaces.numofindices = (DWORD)number_of_indices;
+			meshfaces.number_of_indices = (DWORD)number_of_indices;
 			return TRUE;
 		}
 		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \';\', got", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
@@ -987,7 +986,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetArray(char *buff, std::size_t blen, void *plist, DWORD number_of_entries, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*), BOOL getnextinput)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetArray"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		for (DWORD i = 0; i < number_of_entries; ++i) {
@@ -1001,10 +1000,18 @@ namespace ns_HoLin
 					if ((i + 1) == number_of_entries)
 						break;
 					else {
-						return PrintOffendingLine("\n%s %u %s %u\n%s%zu\n%u\n", "Error expecting", number_of_entries,
+
+						return PrintOffendingLine(
+							"\n%s %u %s %u\n%s%zu\n%u\n",
+							"Error expecting",
+							number_of_entries,
 							"got",
 							(i + 1),
-							"Line : ", linenumber, __LINE__);
+							"Line : ",
+							linenumber,
+							__LINE__
+						);
+
 					}
 				}
 				if (GetNextInput(IsValidSeperator) == FALSE)
@@ -1028,7 +1035,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::Get2DArray(char *buff, std::size_t blen, void *plist, DWORD rows, DWORD cols, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*, DWORD, DWORD))
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("Get2DArray"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		for (DWORD i = 0; i < rows; ++i) {
@@ -1063,7 +1070,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetVertices(char *buff, std::size_t blen, std::vector<DirectX::XMFLOAT3> &vertices, DWORD numofvertices)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVertices"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		buff[0] = '\0';
@@ -1076,7 +1083,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetNormalFaceIndices(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetNormalFaceIndices"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_indices_in_polygon = 0;
 		std::vector<DWORD> entries;
@@ -1096,7 +1103,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshNormalsBody(char *buff, std::size_t blen, ns_HoLin::sMeshNormals *p_meshnormals)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("MeshNormalsBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -1124,7 +1131,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshNormals(char *buff, std::size_t blen, ns_HoLin::sMeshNormals *p_meshnormals)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshNormals"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -1156,7 +1163,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetCoord2D(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetCoord2D"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DirectX::XMFLOAT2 f;
 
@@ -1177,7 +1184,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshTextureCoordBody(char *buff, std::size_t blen, std::vector<DirectX::XMFLOAT2> &t)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshTextureCoordBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_texture_coord = 0;
 
@@ -1195,7 +1202,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshTextureCoord(char *buff, std::size_t blen, std::vector<DirectX::XMFLOAT2> &t)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshTextureCoord"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -1212,7 +1219,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetSkinWeightsBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetSkinWeightsBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		ns_HoLin::sSkinWeights skinning;
 
@@ -1247,7 +1254,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetSkinWeights(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetSkinWeights"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetTemplateName(buff, blen)) {
@@ -1260,7 +1267,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetXSkinMeshHeaderBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetXSkinMeshHeaderBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -1283,7 +1290,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetXSkinMeshHeader(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetXSkinMeshHeader"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetNextInput(IsValidEntry)) {
@@ -1298,7 +1305,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetVertexDuplicationIndicesBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVertexDuplicationIndicesBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -1332,7 +1339,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetVertexDuplicationIndices(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetVertexDuplicationIndices"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (p_mesh) {
@@ -1352,7 +1359,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetIndexColor(char *buff, std::size_t blen, void *plist)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetIndexColor"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		ns_HoLin::sIndexedColor c;
 
@@ -1375,7 +1382,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshVertexColorsBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshVertexColorsBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD nVertexColors; // should equal number of polygons in mesh
 
@@ -1384,7 +1391,7 @@ namespace ns_HoLin
 		if (GetUnsignedInteger(buff, blen, ';') == FALSE)
 			return FALSE;
 		nVertexColors = (DWORD)std::atoi(buff);
-		if (pmesh->meshfaces.numofindices == nVertexColors) {
+		if (pmesh->meshfaces.number_of_indices == nVertexColors) {
 			if (GetArray(buff, blen, (void*)&pmesh->p_extra->scolors.vertexColors, nVertexColors, &cTextXFileParser::GetIndexColor, FALSE)) {
 				return TRUE;
 			}
@@ -1396,7 +1403,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshVertexColors(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshVertexColors"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -1415,7 +1422,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshAttributes(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshAttributes"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (std::isalpha((int)sfile.GetNextCharToProcess())) {
@@ -1492,7 +1499,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMeshBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMeshBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_vertices = 0;
 
@@ -1538,7 +1545,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetMesh(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetMesh"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		memset((void*)buff, 0, blen);
@@ -1561,7 +1568,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetSubFrame(char *buff, std::size_t blen, ns_HoLin::sFrame *p_parentframe)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetSubFrame"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::string name;
 
@@ -1601,7 +1608,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFrameAttributes(char *buff, std::size_t blen, ns_HoLin::sFrame *p_parentframe)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFrameAttributes"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (strcmp(buff, "Frame") == 0) {
@@ -1643,7 +1650,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFrameBody(char *buff, std::size_t blen, ns_HoLin::sFrame *pframe)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFrameBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		ns_HoLin::sSequenceOfFrames *pseq = nullptr;
 
@@ -1695,7 +1702,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFrame(char *buff, std::size_t blen, ns_HoLin::sSequenceOfFrames *pseq)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFrame"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::string name;
 
@@ -1722,7 +1729,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetFloatKeysBody(char *buff, std::size_t blen, void *v)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetFloatKeysBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_entries = 0;
 		
@@ -1760,7 +1767,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetTimedFloatKeys(char *buff, std::size_t blen, void *v)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetTimedFloatKeys"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		ns_HoLin::sTimedFloatKeys time_slot;
 		
@@ -1780,7 +1787,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationKeyBody(char *buff, std::size_t blen, sAnimation_Data *p_anim_data)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationKeyBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_keys = 0;
 		std::vector<ns_HoLin::sTimedFloatKeys> transform_data;
@@ -1807,7 +1814,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationKey(char *buff, std::size_t blen, sAnimation_Data *p_anim_data)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationKey"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -1827,7 +1834,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationOptionsBody(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationOptionsBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		
 		if (GetUnsignedInteger(buff, blen) == FALSE)
@@ -1861,7 +1868,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationOptions(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationOptions"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -1874,7 +1881,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationBody(char *buff, std::size_t blen, ns_HoLin::sAnimation *p_animation)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		
 		while (TRUE) {
@@ -1930,7 +1937,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimation(char *buff, std::size_t blen, ns_HoLin::sAnimationSet *pset)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimation"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::string name;
 		ns_HoLin::sAnimation *p_animation = nullptr;
@@ -1967,7 +1974,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationSetBody(char *buff, std::size_t blen, sAnimationSet *pset)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationSetBody"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {
@@ -1998,7 +2005,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimationSet(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimationSet"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::string name;
 
@@ -2024,7 +2031,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetAnimTicksPerSecond(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetAnimTickPerSecond"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != '{') {
@@ -2044,7 +2051,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::ExtractTemplates(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("ExtractTemplate"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (strcmp(buff, "Mesh") == 0) {
@@ -2093,7 +2100,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::VerifyToken(char token)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("VerifyToken"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (sfile.GetNextCharToProcess() != token) {
@@ -2112,7 +2119,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetCarriageReturn()
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetCarriageReturn"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetChar()) {
@@ -2129,7 +2136,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::ReadCommentChar()
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetReadCommentChar"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {
@@ -2155,7 +2162,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetComment()
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetComment"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		if (GetChar()) {
@@ -2173,7 +2180,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetNextInput(std::function<BOOL(int)> func)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetNextInput"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {
@@ -2211,7 +2218,7 @@ namespace ns_HoLin
 	BOOL cTextXFileParser::GetNextToken(const char token)
 	{
 #ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetNextToken"));
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
 		while (TRUE) {

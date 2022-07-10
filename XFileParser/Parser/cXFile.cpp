@@ -29,6 +29,7 @@ namespace ns_HoLin
 	{
 		if (hfile)
 			return FALSE;
+
 		Cleanup();
 		text.xfiledata.Cleanup();
 

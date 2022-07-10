@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <vector>
 #include <string>
+#include <utility>
 
 namespace ns_HoLin
 {
@@ -11,10 +12,9 @@ namespace ns_HoLin
 		static std::vector<std::string> history;
 
 		sFunctionCallHistory() {}
-		sFunctionCallHistory(std::string);
+		sFunctionCallHistory(const char*);
 		~sFunctionCallHistory();
 		
-		static void Insert(std::string_view);
 		static BOOL PrintHistoryLog(BOOL = FALSE);
 	};
 }
