@@ -39,8 +39,13 @@ namespace ns_HoLin
 		ns_HoLin::sFrames sframeslist;
 		ns_HoLin::sAnimationSetList sanimationsetlist;
 		
+		sXFileData() {}
+		sXFileData(sXFileData&&) = delete;
+		sXFileData(const sXFileData&) = delete;
 		~sXFileData();
-		void Cleanup();
+		void Cleanup(HANDLE = NULL);
+		sXFileData& operator=(sXFileData&&) = delete;
+		sXFileData& operator=(const sXFileData&) = delete;
 	};
 	
 	class cTextXFileParser
@@ -52,10 +57,14 @@ namespace ns_HoLin
 		BOOL trackoutput;
 		
 		cTextXFileParser();
+		cTextXFileParser(cTextXFileParser&&) = delete;
+		cTextXFileParser(const cTextXFileParser&) = delete;
 		~cTextXFileParser();
 		BOOL ParseFile(PHANDLE, BOOL = FALSE, BOOL = FALSE);
 		explicit operator bool() const;
 		bool operator !() const;
+		cTextXFileParser& operator=(cTextXFileParser&&) = delete;
+		cTextXFileParser& operator=(const cTextXFileParser&) = delete;
 	private:
 		std::size_t linenumber;
 		ns_HoLin::sFunctionCallHistory functioncalls;

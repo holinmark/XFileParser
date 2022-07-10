@@ -7,7 +7,7 @@ namespace ns_HoLin
 		Cleanup();
 	}
 
-	void sXFileData::Cleanup()
+	void sXFileData::Cleanup(HANDLE hfile)
 	{
 		smateriallist.clear();
 		smeshlist.Cleanup();
@@ -1732,7 +1732,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		DWORD number_of_entries = 0;
-		
+		float value = 0.0f;
+
 		if (GetUnsignedInteger(buff, blen) == FALSE)
 			return FALSE;
 		if (VerifyToken(';') == FALSE)
@@ -1745,7 +1746,8 @@ namespace ns_HoLin
 				if (GetNextInput(IsValidSeperator) == FALSE)
 					return FALSE;
 			}
-			((ns_HoLin::sTimedFloatKeys*)v)->tfkeys.push_back((float)atof(buff));
+			value = static_cast<float>(atof(buff));
+			((ns_HoLin::sTimedFloatKeys*)v)->tfkeys.emplace_back(value);
 			if (sfile.GetNextCharToProcess() == ',')
 				continue;
 			else if (sfile.GetNextCharToProcess() == ';') {

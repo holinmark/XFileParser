@@ -4,28 +4,12 @@ namespace ns_HoLin
 {
 	sMeshFaces::sMeshFaces()
 	{
-		number_of_indices = 0;
-	}
-
-	sMeshFaces::sMeshFaces(sMeshFaces &&other)
-	{
-		number_of_indices = other.number_of_indices;
-		other.number_of_indices = 0;
-		facevertexindices.clear();
-		facevertexindices = std::move(other.facevertexindices);
+		this->number_of_indices = 0;
 	}
 
 	sMeshFaces::~sMeshFaces()
 	{
 		Cleanup();
-	}
-
-	sMeshFaces& sMeshFaces::operator=(sMeshFaces &&other)
-	{
-		number_of_indices = other.number_of_indices;
-		other.number_of_indices = 0;
-		facevertexindices = std::move(other.facevertexindices);
-		return *this;
 	}
 
 	void sMeshFaces::Cleanup(HANDLE hfile)
@@ -109,37 +93,12 @@ namespace ns_HoLin
 		pnextmesh = nullptr;
 	}
 
-	sMesh::sMesh(sMesh &&other)
-	{
-		p_extra = nullptr;
-		pnextmesh = nullptr;
-		name.clear();
-		name = std::move(other.name);
-		vertices.clear();
-		vertices = std::move(other.vertices);
-		meshfaces = std::move(other.meshfaces);
-		p_extra = other.p_extra;
-		other.p_extra = nullptr;
-	}
-
 	sMesh::~sMesh()
 	{
 		Cleanup();
 	}
 
-	sMesh& sMesh::operator=(sMesh &&other)
-	{
-		name.clear();
-		name = std::move(other.name);
-		vertices.clear();
-		vertices = std::move(other.vertices);
-		meshfaces = std::move(other.meshfaces);
-		p_extra = other.p_extra;
-		other.p_extra = nullptr;
-		return *this;
-	}
-
-	void sMesh::Cleanup()
+	void sMesh::Cleanup(HANDLE hfile)
 	{
 		name.clear();
 		vertices.clear();
@@ -166,7 +125,7 @@ namespace ns_HoLin
 		Cleanup();
 	}
 
-	void sMeshList::Cleanup()
+	void sMeshList::Cleanup(HANDLE hfile)
 	{
 		number_of_meshes = 0;
 		if (pfirstmesh) {

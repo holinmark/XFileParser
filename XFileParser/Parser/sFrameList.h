@@ -19,8 +19,12 @@ namespace ns_HoLin
 		static std::size_t number_of_frames_created;
 
 		sFrame();
+		sFrame(sFrame&&) = delete;
+		sFrame(const sFrame&) = delete;
 		~sFrame();
 		void Cleanup(HANDLE = NULL);
+		sFrame& operator=(sFrame&&) = delete;
+		sFrame& operator=(const sFrame&) = delete;
 	};
 
 	struct sSequenceOfFrames
@@ -32,8 +36,12 @@ namespace ns_HoLin
 		sSequenceOfFrames *pnextseq;
 
 		sSequenceOfFrames();
+		sSequenceOfFrames(sSequenceOfFrames&&) = delete;
+		sSequenceOfFrames(const sSequenceOfFrames&) = delete;
 		~sSequenceOfFrames();
 		void Cleanup(HANDLE = NULL);
+		sSequenceOfFrames& operator=(sSequenceOfFrames&&) = delete;
+		sSequenceOfFrames& operator=(const sSequenceOfFrames&) = delete;
 		void InsertFrame(sFrame*);
 		BOOL Find(std::string_view);
 		sFrame* Search(std::string_view);
@@ -47,8 +55,12 @@ namespace ns_HoLin
 		std::size_t number_of_sequences;
 
 		sFrames();
+		sFrames(sFrames&&) = delete;
+		sFrames(const sFrames&) = delete;
 		~sFrames();
 		void Cleanup(HANDLE = NULL);
+		sFrames& operator=(sFrames&&) = delete;
+		sFrames& operator=(const sFrames&) = delete;
 		ns_HoLin::sSequenceOfFrames* CreateNewSequence();
 		ns_HoLin::sSequenceOfFrames* GetLastSequence() { return plastseq; }
 		void InsertSequenceOfFrames(ns_HoLin::sSequenceOfFrames*);

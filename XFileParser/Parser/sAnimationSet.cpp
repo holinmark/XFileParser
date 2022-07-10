@@ -7,17 +7,11 @@ namespace ns_HoLin
 		time = 0;
 	}
 
-	sTimedFloatKeys::sTimedFloatKeys(sTimedFloatKeys &&other) noexcept
+	sTimedFloatKeys::sTimedFloatKeys(sTimedFloatKeys &&other)
 	{
 		this->time = other.time;
+		other.time = 0;
 		this->tfkeys = std::move(other.tfkeys);
-	}
-	
-	sTimedFloatKeys::sTimedFloatKeys(const sTimedFloatKeys &other)
-	{
-		this->time = other.time;
-		this->tfkeys.clear();
-		std::copy(other.tfkeys.begin(), other.tfkeys.end(), this->tfkeys.begin());
 	}
 
 	sTimedFloatKeys::~sTimedFloatKeys()
@@ -31,21 +25,6 @@ namespace ns_HoLin
 		tfkeys.clear();
 	}
 
-	sTimedFloatKeys& sTimedFloatKeys::operator=(sTimedFloatKeys &&other) noexcept
-	{
-		this->time = other.time;
-		this->tfkeys = std::move(other.tfkeys);
-		return *this;
-	}
-	
-	sTimedFloatKeys& sTimedFloatKeys::operator=(const sTimedFloatKeys &other)
-	{
-		this->time = other.time;
-		this->tfkeys.clear();
-		std::copy(other.tfkeys.begin(), other.tfkeys.end(), this->tfkeys.begin());
-		return *this;
-	}
-	
 	sAnimation_Data::sAnimation_Data()
 	{
 		pnextanimation_data = nullptr;

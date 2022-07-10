@@ -18,10 +18,12 @@ namespace ns_HoLin
 		std::vector<std::vector<DWORD>> facevertexindices;
 
 		sMeshFaces();
-		sMeshFaces(sMeshFaces&&);
+		sMeshFaces(sMeshFaces&&) = delete;
+		sMeshFaces(const sMeshFaces&) = delete;
 		~sMeshFaces();
-		sMeshFaces& operator=(sMeshFaces&&);
 		void Cleanup(HANDLE = NULL);
+		sMeshFaces& operator=(sMeshFaces&&) = delete;
+		sMeshFaces& operator=(const sMeshFaces&) = delete;
 	};
 
 	struct sMeshNormals
@@ -30,8 +32,12 @@ namespace ns_HoLin
 		std::vector<std::vector<DWORD>> facenormals;
 
 		sMeshNormals();
+		sMeshNormals(sMeshNormals&&) = delete;
+		sMeshNormals(const sMeshNormals&) = delete;
 		~sMeshNormals();
 		void Cleanup(HANDLE = NULL);
+		sMeshNormals& operator=(sMeshNormals&&) = delete;
+		sMeshNormals& operator=(const sMeshNormals&) = delete;
 	};
 
 	struct sIndexedColor
@@ -44,8 +50,13 @@ namespace ns_HoLin
 	{
 		std::vector<sIndexedColor> vertexColors;
 		
+		sMeshVertexColors() {}
+		sMeshVertexColors(sMeshVertexColors&&) = delete;
+		sMeshVertexColors(const sMeshVertexColors&) = delete;
 		~sMeshVertexColors();
 		void Cleanup(HANDLE = NULL);
+		sMeshVertexColors& operator=(sMeshVertexColors&&) = delete;
+		sMeshVertexColors& operator=(const sMeshVertexColors&) = delete;
 	};
 
 	struct sVertexDuplicationIndices
@@ -56,8 +67,12 @@ namespace ns_HoLin
 										  in the vertex array for the mesh would have had if no duplication had occurred.
 										  Indices in this array that are the same, therefore, indicate duplicate vertices.*/
 		sVertexDuplicationIndices();
+		sVertexDuplicationIndices(sVertexDuplicationIndices&&) = delete;
+		sVertexDuplicationIndices(const sVertexDuplicationIndices&) = delete;
 		~sVertexDuplicationIndices();
 		void Cleanup(HANDLE = NULL);
+		sVertexDuplicationIndices& operator=(sVertexDuplicationIndices&&) = delete;
+		sVertexDuplicationIndices& operator=(const sVertexDuplicationIndices&) = delete;
 	};
 
 	struct sMeshExtraAttributes
@@ -76,8 +91,12 @@ namespace ns_HoLin
 		std::vector<DirectX::XMFLOAT4X4> list_of_matrices;
 
 		sMeshExtraAttributes();
+		sMeshExtraAttributes(sMeshExtraAttributes&&) = delete;
+		sMeshExtraAttributes(const sMeshExtraAttributes&) = delete;
 		~sMeshExtraAttributes();
 		void Cleanup(HANDLE = NULL);
+		sMeshExtraAttributes& operator=(sMeshExtraAttributes&&) = delete;
+		sMeshExtraAttributes& operator=(const sMeshExtraAttributes&) = delete;
 	};
 
 	struct sMesh
@@ -92,10 +111,12 @@ namespace ns_HoLin
 		ns_HoLin::sMesh *pnextmesh;
 
 		sMesh();
-		sMesh(sMesh&&);
+		sMesh(sMesh&&) = delete;
+		sMesh(const sMesh&) = delete;
 		~sMesh();
-		sMesh& operator=(sMesh&&);
-		void Cleanup();
+		void Cleanup(HANDLE = NULL);
+		sMesh& operator=(sMesh&&) = delete;
+		sMesh& operator=(const sMesh&) = delete;
 	};
 
 	struct sMeshList
@@ -104,8 +125,12 @@ namespace ns_HoLin
 		sMesh *pfirstmesh, *plastmesh;
 
 		sMeshList();
+		sMeshList(sMeshList&&) = delete;
+		sMeshList(const sMeshList&) = delete;
 		~sMeshList();
-		void Cleanup();
+		void Cleanup(HANDLE = NULL);
+		sMeshList& operator=(sMeshList&&) = delete;
+		sMeshList& operator=(const sMeshList&) = delete;
 		sMesh* CreateNewMesh();
 		void InsertMesh(sMesh* = nullptr);
 		BOOL Find(std::string_view);

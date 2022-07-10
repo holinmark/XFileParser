@@ -12,7 +12,11 @@ namespace ns_HoLin
 		DWORD nBones;
 
 		sSkinHeader();
+		sSkinHeader(sSkinHeader&&) = delete;
+		sSkinHeader(const sSkinHeader&) = delete;
 		~sSkinHeader();
+		sSkinHeader& operator=(sSkinHeader&&) = delete;
+		sSkinHeader& operator=(const sSkinHeader&) = delete;
 	};
 
 	struct sSkinWeights
@@ -37,7 +41,11 @@ namespace ns_HoLin
 		std::vector<sSkinWeights> p_skin_weights;
 
 		sSkinInfo();
+		sSkinInfo(sSkinInfo&&) = delete;
+		sSkinInfo(const sSkinInfo&) = delete;
 		~sSkinInfo();
+		sSkinInfo& operator=(sSkinInfo&&) = delete;
+		sSkinInfo& operator=(const sSkinInfo&) = delete;
 		void CreateWeights(DWORD, DWORD, DWORD);
 	};
 }

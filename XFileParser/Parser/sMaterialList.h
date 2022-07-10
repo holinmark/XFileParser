@@ -18,6 +18,7 @@ namespace ns_HoLin
 		sMaterial(const sMaterial&);
 		sMaterial(sMaterial&&);
 		sMaterial& operator=(sMaterial&&);
+		sMaterial& operator=(const sMaterial&) = delete;
 	};
 	/*
 	struct sMaterialList
