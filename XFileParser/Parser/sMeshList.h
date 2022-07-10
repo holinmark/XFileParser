@@ -43,7 +43,13 @@ namespace ns_HoLin
 	struct sIndexedColor
 	{
 		DWORD index;
-		DirectX::XMFLOAT4 indexColor; // 0 = r, 1 = g, 2 = b, 3 = a
+		DirectX::XMFLOAT4 indexColor; // x = r, y = g, z = b, w = a
+
+		sIndexedColor() : index(0), indexColor(DirectX::XMFLOAT4(1, 1, 1, 1)) {}
+		sIndexedColor(sIndexedColor&&);
+		sIndexedColor(const sIndexedColor&);
+		sIndexedColor& operator=(sIndexedColor&&) = delete;
+		sIndexedColor& operator=(const sIndexedColor&) = delete;
 	};
 
 	struct sMeshVertexColors

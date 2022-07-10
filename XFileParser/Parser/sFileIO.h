@@ -21,8 +21,12 @@ namespace ns_HoLin
 
 	public:
 		cFileInput();
+		cFileInput(cFileInput&&) = delete;
+		cFileInput(const cFileInput&) = delete;
 		~cFileInput();
 		void Cleanup();
+		cFileInput& operator=(cFileInput&&) = delete;
+		cFileInput& operator=(const cFileInput&) = delete;
 		explicit operator bool() const;
 		BOOL MoveBufferIndex(BOOL);
 		char GetNextCharToProcess() { return ch; }

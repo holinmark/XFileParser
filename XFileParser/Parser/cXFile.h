@@ -35,21 +35,17 @@ namespace ns_HoLin
 		ns_HoLin::cTextXFileParser text;
 	public:
 		cXFile();
+		cXFile(cXFile&&) = delete;
+		cXFile(const cXFile&) = delete;
 		~cXFile();
+		cXFile& operator=(cXFile&&) = delete;
+		cXFile& operator=(const cXFile&) = delete;
 		void Cleanup();
-		operator bool() {
-			if (hfile)
-				return true;
-			return false;
-		}
+		operator bool() { return (hfile) ? true : false; }
 		BOOL ReadCommandLineArgumentsThenParse(DWORD, const wchar_t**);
 		BOOL ReadXFile(const wchar_t*);
-		DWORD GetXFileType() {
-			return file_type;
-		}
-		ns_HoLin::cTextXFileParser* GetTextData() {
-			return (ns_HoLin::cTextXFileParser*)&this->text;
-		}
+		DWORD GetXFileType() { return file_type; }
+		ns_HoLin::cTextXFileParser* GetTextData() { return (ns_HoLin::cTextXFileParser*)&this->text; }
 	protected:
 		void OpenFileWithMeshFileName();
 		bool openfile(const wchar_t*);

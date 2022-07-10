@@ -33,6 +33,25 @@ namespace ns_HoLin
 		facenormals.clear();
 	}
 
+	sIndexedColor::sIndexedColor(sIndexedColor &&other)
+	{
+		this->index = other.index;
+		this->indexColor = other.indexColor;
+	}
+
+	sIndexedColor::sIndexedColor(const sIndexedColor &other)
+	{
+		this->index = other.index;
+		this->indexColor = other.indexColor;
+	}
+
+	/*sIndexedColor& sIndexedColor::operator=(const sIndexedColor &other)
+	{
+		this->index = other.index;
+		this->indexColor = other.indexColor;
+		return *this;
+	}*/
+
 	sMeshVertexColors::~sMeshVertexColors()
 	{
 		Cleanup();
