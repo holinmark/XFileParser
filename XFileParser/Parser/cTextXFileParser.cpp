@@ -905,12 +905,15 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		if (GetNextToken('{') == FALSE)
-			return FALSE;
-		if (GetVectorBody(buff, blen, plist) == FALSE)
-			return FALSE;
-		if (GetNextToken('}') == FALSE)
-			return FALSE;
+		if (GetNextToken('{') == FALSE) {
+			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
+		}
+		if (GetVectorBody(buff, blen, plist) == FALSE) {
+			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
+		}
+		if (GetNextToken('}') == FALSE) {
+			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
+		}
 		return TRUE;
 	}
 
@@ -1431,8 +1434,9 @@ namespace ns_HoLin
 			if (GetReservedWord(&buff[1], blen - 1, '{')) {
 				if (p_mesh->p_extra == nullptr) {
 					p_mesh->p_extra = new ns_HoLin::sMeshExtraAttributes;
-					if (p_mesh->p_extra == NULL)
+					if (p_mesh->p_extra == NULL) {
 						return PrintOffendingLine("\n%s %zu\n%u\n", "Error unable to allocate memory.\nLine : ", linenumber, __LINE__);
+					}
 				}
 				if (strcmp(buff, "MeshMaterialList") == 0) {
 					if (GetMeshMaterialList(buff, blen, p_mesh))
@@ -1484,9 +1488,7 @@ namespace ns_HoLin
 					return GetXSkinMeshHeader(buff, blen, p_mesh);
 				}
 				else if (strcmp(buff, "Vector") == 0) {
-					if (!this->GetVector(buff, blen, (void*)&p_mesh->p_extra->list_of_vectors)) {
-						return PrintOffendingLine("\n%s\n%zu\n%u\n", L"Error GetVector", linenumber, __LINE__);
-					}
+					return this->GetVector(buff, blen, (void*)&p_mesh->p_extra->list_of_vectors);
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown word", buff, "Line : ", linenumber, __LINE__);
