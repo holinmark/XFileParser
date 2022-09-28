@@ -128,52 +128,72 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
+		int ch = 0;
 
 		buff[0] = '\0';
 		if (sfile.GetNextCharToProcess() != '{') {
 			while (TRUE) {
-				if (GetChar() == FALSE)
+				if (!GetChar())
 					return FALSE;
-				if (std::isalnum((int)sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '_' || sfile.GetNextCharToProcess() == '-' || sfile.GetNextCharToProcess() == '.' || sfile.GetNextCharToProcess() == '{') {
+				ch = static_cast<int>(sfile.GetNextCharToProcess());
+				if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.' || ch == (int)'{') {
 					break;
 				}
-				else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+				else if (IsWhiteSpace(this, ch)) {
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Error unknown token",
-						sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Error unknown token", static_cast<char>(ch), "\nLine : ", linenumber, __LINE__);
 				}
 			}
 		}
-		if (sfile.GetNextCharToProcess() == '{')
+		if (ch == (int)'{')
 			return TRUE;
 		else {
 			std::size_t limit = blen - 1;
 			
-			buff[0] = sfile.GetNextCharToProcess();
+			buff[0] = static_cast<char>(ch);
 			buff[1] = '\0';
 			for (std::size_t i = 1; i < limit; ++i) {
-				if (GetChar() == FALSE) {
+				if (!GetChar()) {
 					return FALSE;
 				}
-				if (sfile.GetNextCharToProcess() == ' ' || sfile.GetNextCharToProcess() == '\n') {
-					break;
+				ch = static_cast<int>(sfile.GetNextCharToProcess());
+				if (ch == (int)' ' || ch == (int)'\n') {
+					if (GetNextToken('{')) {
+						return TRUE;
+					}
+					else {
+						break;
+					}
 				}
-				else if (std::isalpha((int)sfile.GetNextCharToProcess()) || std::isdigit((int)sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '.' || sfile.GetNextCharToProcess() == '_' || sfile.GetNextCharToProcess() == '\'' || sfile.GetNextCharToProcess() == '-') {
-					buff[i] = sfile.GetNextCharToProcess();
+				else if (ch == (int)'\r') {
+					if (GetChar()) {
+						if (sfile.GetNextCharToProcess() == '\n') {
+							if (GetNextToken('{')) {
+								return TRUE;
+							}
+							else {
+								break;
+							}
+						}
+					}
+					else {
+						break;
+					}
+				}
+				else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
+					buff[i] = static_cast<char>(ch);
 					buff[i + 1] = '\0';
 				}
-				else if (sfile.GetNextCharToProcess() == '{') {
+				else if (ch == (int)'{') {
 					return TRUE;
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%c\' %s \'{\'%s%zu\n%u\n",
-						"Error unexpected token", sfile.GetNextCharToProcess(), "expecting", "\nLine : ", linenumber, __LINE__);
+						"Error unexpected token", static_cast<char>(ch), "expecting", "\nLine : ", linenumber, __LINE__);
 				}
 			}
-			if (GetNextToken('{'))
-				return TRUE;
 		}
 		return PrintOffendingLine("\n%s%s%zu\n%u\n", "Error buffer overload.", "\nLine : ", linenumber, __LINE__);
 	}

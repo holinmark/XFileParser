@@ -180,19 +180,27 @@ namespace ns_HoLin
 	BOOL cXFile::ReadHeader()
 	{
 		struct sHeader {
-			char xfileindicator[4];
-			char version[4];
-			char format[4];
-			char floatsize[4];
+			union{
+				struct {
+					char buffer[17];
+				};
+				struct {
+					long xfileindicator;
+					long version;
+					long format;
+					long floatsize;
+					char end;
+				};
+			};
 		};
-
 		sHeader headerbuffer;
-		DWORD bytesread = 0;
+		DWORD bytesread = 0, bytes_to_read = _ARRAYSIZE(headerbuffer.buffer) * sizeof(char);
 		long data = 0;
 
-		if (ReadFile(hfile, (LPVOID)&headerbuffer, sizeof(headerbuffer), &bytesread, nullptr)) {
-			if (bytesread == sizeof(headerbuffer)) {
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.xfileindicator, sizeof(char) * 4) == 0) {
+		memset(&headerbuffer, 0, sizeof(headerbuffer));
+		if (ReadFile(hfile, (LPVOID)headerbuffer.buffer, bytes_to_read, &bytesread, nullptr)) {
+			if (bytesread == bytes_to_read) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.xfileindicator, sizeof(long)) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_MAGIC:
 						break;
@@ -205,7 +213,7 @@ namespace ns_HoLin
 						return FALSE;
 					}
 				}
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.version, sizeof(char) * 4) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.version, sizeof(long)) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_VERSION:
 						break;
@@ -218,7 +226,7 @@ namespace ns_HoLin
 						return FALSE;
 					}
 				}
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.format, sizeof(char) * 4) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.format, sizeof(long)) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_TEXT:
 						file_type = TEXT_FILE;
@@ -248,7 +256,7 @@ namespace ns_HoLin
 						return FALSE;
 					}
 				}
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.floatsize, sizeof(char) * 4) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.floatsize, sizeof(long)) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_FLOAT_BITS_32:
 						floatsize = 32;
@@ -288,6 +296,13 @@ namespace ns_HoLin
 		if (ReadHeader()) {
 			if (file_type == TEXT_FILE) {
 				return text.ParseFile(&hfile, btrack);
+			}
+			else if (file_type == BINARY_FILE) {
+#ifdef _WINDOWS
+				MessageBox(nullptr, L"Binary x file unsupported.", L"Error", MB_OK);
+#else
+				std::wcout << "Binary xfile unsupported.\n";
+#endif
 			}
 		}
 		return FALSE;
