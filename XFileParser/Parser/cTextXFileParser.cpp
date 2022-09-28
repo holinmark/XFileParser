@@ -150,11 +150,14 @@ namespace ns_HoLin
 		if (ch == (int)'{')
 			return TRUE;
 		else {
-			std::size_t limit = blen - 1;
+			std::size_t limit = blen - 1, i = 1;
 			
 			buff[0] = static_cast<char>(ch);
 			buff[1] = '\0';
-			for (std::size_t i = 1; i < limit; ++i) {
+			while(TRUE) {
+				if (i == limit) {
+					return PrintOffendingLine("\n%s\n%zu\n%u", "Error maximum string length reached.", linenumber, __LINE__);
+				}
 				if (!GetChar()) {
 					return FALSE;
 				}
@@ -168,30 +171,25 @@ namespace ns_HoLin
 					}
 				}
 				else if (ch == (int)'\r') {
-					if (GetChar()) {
-						if (sfile.GetNextCharToProcess() == '\n') {
-							if (GetNextToken('{')) {
-								return TRUE;
-							}
-							else {
-								break;
-							}
-						}
-					}
-					else {
-						break;
-					}
+					return this->GetCarriageReturn();
 				}
 				else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
-					buff[i] = static_cast<char>(ch);
-					buff[i + 1] = '\0';
+					buff[i++] = static_cast<char>(ch);
+					buff[i] = '\0';
 				}
 				else if (ch == (int)'{') {
 					return TRUE;
 				}
 				else {
+					
 					return PrintOffendingLine("\n%s \'%c\' %s \'{\'%s%zu\n%u\n",
-						"Error unexpected token", static_cast<char>(ch), "expecting", "\nLine : ", linenumber, __LINE__);
+						"Error unexpected token",
+						static_cast<char>(ch),
+						"expecting",
+						"\nLine : ",
+						linenumber,
+						__LINE__);
+						
 				}
 			}
 		}
