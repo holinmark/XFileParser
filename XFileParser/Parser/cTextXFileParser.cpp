@@ -43,7 +43,7 @@ namespace ns_HoLin
 		trackoutput = btrack;
 		sfile.SetFileHandle(hfile);
 		while (TRUE) {
-			if (!GetChar()) {
+			if (!GetNextChar()) {
 				if (sfile.GetEndOfFileStatus())
 					return TRUE;
 				else
@@ -52,9 +52,9 @@ namespace ns_HoLin
 			if (sfile.GetEndOfFileStatus()) {
 				return TRUE;
 			}
-			if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+			if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 				continue;
-			else if (sfile.GetNextCharToProcess() == '/') {
+			else if (sfile.GetCurrentCharToProcess() == '/') {
 				if (GetComment()) {
 					if (sfile.GetEndOfFileStatus()) {
 						return TRUE;
@@ -67,8 +67,8 @@ namespace ns_HoLin
 					break;
 				}
 			}
-			else if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-				buff[0] = sfile.GetNextCharToProcess();
+			else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+				buff[0] = sfile.GetCurrentCharToProcess();
 				buff[1] = '\0';
 				if (GetReservedWord(&buff[1], blen - 1, '{')) {
 					if (!ExtractTemplates(buff, blen)) {
@@ -82,7 +82,7 @@ namespace ns_HoLin
 			}
 			else {
 				return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
-					"Unknown token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+					"Unknown token", sfile.GetCurrentCharToProcess(), "\nLine : ", linenumber, __LINE__);
 			}
 		}
 		return FALSE;
@@ -102,20 +102,20 @@ namespace ns_HoLin
 		return true;
 	}
 
-	BOOL cTextXFileParser::GetChar()
+	BOOL cTextXFileParser::GetNextChar()
 	{
 		if (sfile.MoveBufferIndex(trackoutput)) {
-			if (sfile.GetNextCharToProcess() == '\r') {
+			if (sfile.GetCurrentCharToProcess() == '\r') {
 				if (sfile.MoveBufferIndex(trackoutput) == FALSE) {
 					return FALSE;
 				}
 			}
-			if (sfile.GetNextCharToProcess() == '\n') {
+			if (sfile.GetCurrentCharToProcess() == '\n') {
 				linenumber++;
 			}
 			if (trackoutput) {
 #ifdef _CONSOLE
-				std::clog << sfile.GetNextCharToProcess();
+				std::clog << sfile.GetCurrentCharToProcess();
 #endif
 			}
 			return TRUE;
@@ -131,11 +131,11 @@ namespace ns_HoLin
 		int ch = 0;
 
 		buff[0] = '\0';
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			while (TRUE) {
-				if (!GetChar())
+				if (!GetNextChar())
 					return FALSE;
-				ch = static_cast<int>(sfile.GetNextCharToProcess());
+				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
 				if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.' || ch == (int)'{') {
 					break;
 				}
@@ -158,10 +158,10 @@ namespace ns_HoLin
 				if (i == limit) {
 					return PrintOffendingLine("\n%s\n%zu\n%u", "Error maximum string length reached.", linenumber, __LINE__);
 				}
-				if (!GetChar()) {
+				if (!GetNextChar()) {
 					return FALSE;
 				}
-				ch = static_cast<int>(sfile.GetNextCharToProcess());
+				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
 				if (ch == (int)' ' || ch == (int)'\n') {
 					if (GetNextToken('{')) {
 						return TRUE;
@@ -201,22 +201,24 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-
+		int ch = 0;
+		
 		while (TRUE) {
-			if (GetChar()) {
-				if (isdigit(sfile.GetNextCharToProcess())) {
-					buff[0] = sfile.GetNextCharToProcess();
+			if (GetNextChar()) {
+				ch = sfile.GetCurrentCharToProcess();
+				if (isdigit(ch)) {
+					buff[0] = static_cast<char>(ch);
 					buff[1] = '\0';
 					return TRUE;
 				}
-				else if (sfile.GetNextCharToProcess() == '/') {
+				else if (ch == (int)'/') {
 					if (GetComment() == FALSE)
 						break;
 				}
-				else if (sfile.GetNextCharToProcess() == ' ' || sfile.GetNextCharToProcess() == '\n' || sfile.GetNextCharToProcess() == '\t')
+				else if (ch == (int)' ' || ch == (int)'\n' || ch == (int)'\t')
 					continue;
-				else if (sfile.GetNextCharToProcess() == '\r') {
-					if (GetCarriageReturn() == FALSE)
+				else if (ch == (int)'\r') {
+					if (!GetCarriageReturn())
 						return FALSE;
 					continue;
 				}
@@ -228,7 +230,7 @@ namespace ns_HoLin
 				break;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Unexpected token", static_cast<char>(ch), "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetSignedDigit(char *buff, std::size_t blen)
@@ -238,28 +240,28 @@ namespace ns_HoLin
 #endif
 
 		while (TRUE) {
-			if (GetChar()) {
-				if (isdigit(sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '-') {
-					buff[0] = sfile.GetNextCharToProcess();
+			if (GetNextChar()) {
+				if (isdigit(sfile.GetCurrentCharToProcess()) || sfile.GetCurrentCharToProcess() == '-') {
+					buff[0] = sfile.GetCurrentCharToProcess();
 					buff[1] = '\0';
 					return TRUE;
 				}
-				else if (sfile.GetNextCharToProcess() == '/') {
+				else if (sfile.GetCurrentCharToProcess() == '/') {
 					if (GetComment())
 						continue;
 					else
 						break;
 				}
-				else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+				else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 					continue;
-				else if (sfile.GetNextCharToProcess() == '\r') {
+				else if (sfile.GetCurrentCharToProcess() == '\r') {
 					if (GetCarriageReturn() == FALSE)
 						return FALSE;
 					continue;
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
-						"Unexpected token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+						"Unexpected token", sfile.GetCurrentCharToProcess(), "\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
@@ -288,7 +290,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (GetNextToken('{') == FALSE)
 				return functioncalls.PrintHistoryLog();
 		}
@@ -297,7 +299,7 @@ namespace ns_HoLin
 				return TRUE;
 		}
 		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
-			"Unexpected token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+			"Unexpected token", sfile.GetCurrentCharToProcess(), "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFrameTransformMatrix(char *buff, std::size_t blen, DirectX::XMFLOAT4X4 &matrix)
@@ -306,7 +308,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (GetNextToken('{') == FALSE)
 				return functioncalls.PrintHistoryLog();
 		}
@@ -317,7 +319,7 @@ namespace ns_HoLin
 			}
 		}
 		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
-			"Unexpected token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+			"Unexpected token", sfile.GetCurrentCharToProcess(), "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetReservedWord(char *buff, std::size_t blen, char token)
@@ -326,25 +328,27 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
+		int ch = 0;
 		
 		for (std::size_t index = 0; index < limit; ++index) {
-			if (GetChar()) {
-				if (std::isalpha((int)sfile.GetNextCharToProcess()) || isdigit(sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '.' || sfile.GetNextCharToProcess() == '_') {
-					buff[index] = sfile.GetNextCharToProcess();
+			if (GetNextChar()) {
+				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
+				if (std::isalpha(ch) || isdigit(ch) || ch == (int)'.' || ch == (int)'_') {
+					buff[index] = sfile.GetCurrentCharToProcess();
 					buff[index + 1] = '\0';
 				}
-				else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == token) {
+				else if (IsWhiteSpace(this, ch) || static_cast<char>(ch) == token) {
 					return TRUE;
 				}
-				else if (sfile.GetNextCharToProcess() == '\r') {
+				else if (ch == (int)'\r') {
 					return GetCarriageReturn();
 				}
-				else if (sfile.GetNextCharToProcess() == '/') {
+				else if (ch == (int)'/') {
 					return GetComment();
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
-						"Unknown token", sfile.GetNextCharToProcess(), "\nLine : ", linenumber, __LINE__);
+						"Unknown token", static_cast<char>(ch), "\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
@@ -362,60 +366,63 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::size_t limit = blen - 1;
+		int ch = 0;
 		
 		while (TRUE) {
-			if (GetChar() == FALSE) {
+			if (!GetNextChar()) {
 				return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 			}
-			if (std::isalnum((int)sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '_' || sfile.GetNextCharToProcess() == '-' || sfile.GetNextCharToProcess() == '.') {
+			ch = static_cast<int>(sfile.GetCurrentCharToProcess());
+			if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.') {
 				break;
 			}
-			else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+			else if (IsWhiteSpace(this, ch)) {
 				continue;
 			}
-			else if (sfile.GetNextCharToProcess() == '}') {
+			else if (ch == (int)'}') {
 				return PrintOffendingLine("\n%s%zu\n%u\n",
 					"Error no string input.\nLine :", linenumber, __LINE__);
 			}
 			else {
 				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
-					"Error unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+					"Error unknown token", static_cast<char>(ch), "Line : ", linenumber, __LINE__);
 			}
 		}
-		buff[0] = sfile.GetNextCharToProcess();
+		buff[0] = static_cast<char>(ch);
 		buff[1] = '\0';
 		for (std::size_t i = 1; i < limit; ++i) {
-			if (GetChar()) {
-				if (std::isalnum((int)sfile.GetNextCharToProcess()) || sfile.GetNextCharToProcess() == '.' || sfile.GetNextCharToProcess() == '_' || sfile.GetNextCharToProcess() == '\'' || sfile.GetNextCharToProcess() == '-') {
-					buff[i] = sfile.GetNextCharToProcess();
+			if (GetNextChar()) {
+				ch = sfile.GetCurrentCharToProcess();
+				if (std::isalnum(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
+					buff[i] = static_cast<char>(ch);
 					buff[i + 1] = '\0';
 				}
-				else if (sfile.GetNextCharToProcess() == sep) {
+				else if (static_cast<char>(ch) == sep) {
 					return TRUE;
 				}
-				else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
-					if (GetNextToken(sep) == FALSE)
-						break;
-					return TRUE;
-				}
-				else if (sfile.GetNextCharToProcess() == '\r') {
-					if (GetCarriageReturn() == FALSE)
-						break;
-					if (GetNextToken('{') == FALSE)
+				else if (IsWhiteSpace(this, ch)) {
+					if (!GetNextToken(sep))
 						break;
 					return TRUE;
 				}
-				else if (sfile.GetNextCharToProcess() == '/') {
-					if (GetComment() == FALSE)
+				else if (ch == (int)'\r') {
+					if (!GetCarriageReturn())
 						break;
-					if (GetNextToken('{') == FALSE)
+					if (!GetNextToken('{'))
+						break;
+					return TRUE;
+				}
+				else if (ch == (int)'/') {
+					if (!GetComment())
+						break;
+					if (!GetNextToken('{'))
 						break;
 					else
 						return TRUE;
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
-						"Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+						"Unknown token", static_cast<char>(ch), "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
@@ -434,11 +441,11 @@ namespace ns_HoLin
 		std::size_t limit = blen - 1;
 
 		while (TRUE) {
-			if (GetChar() == FALSE)
+			if (!GetNextChar())
 				return FALSE;
-			if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+			if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 				continue;
-			else if (sfile.GetNextCharToProcess() == '"')
+			else if (sfile.GetCurrentCharToProcess() == '\"')
 				break;
 			else {
 				return PrintOffendingLine("\n%s%zu\n%u\n",
@@ -446,9 +453,9 @@ namespace ns_HoLin
 			}
 		}
 		for (std::size_t i = 0; i < limit; ++i) {
-			if (GetChar() == FALSE)
+			if (!GetNextChar())
 				return FALSE;
-			if (sfile.GetNextCharToProcess() == '"') {
+			if (sfile.GetCurrentCharToProcess() == '"') {
 				if (i == 0) {
 					return PrintOffendingLine("\n%s%zu\n%u\n",
 						"Error string length zero declared.\nLine : ", linenumber, __LINE__);
@@ -457,15 +464,15 @@ namespace ns_HoLin
 					return PrintOffendingLine("|n%s \'%c\'\n%s%zu\n%u\n", "Error expecting token", sep, "Line : ", linenumber, __LINE__);
 				return TRUE;
 			}
-			else if (std::isalnum((int)sfile.GetNextCharToProcess()) || std::ispunct((int)sfile.GetNextCharToProcess())) {
-				buff[i] = sfile.GetNextCharToProcess();
+			else if (std::isalnum((int)sfile.GetCurrentCharToProcess()) || std::ispunct((int)sfile.GetCurrentCharToProcess())) {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[i + 1] = '\0';
 			}
 			else {
-				if (sfile.GetNextCharToProcess() == '\n' || sfile.GetNextCharToProcess() == '\r')
+				if (sfile.GetCurrentCharToProcess() == '\n' || sfile.GetCurrentCharToProcess() == '\r')
 					return PrintOffendingLine("\n%s %zu\n%u\n", "Error unexpected carriage return.\nLine : ", linenumber, __LINE__);
 				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
-					"Error extracting string. Unknown character",  sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+					"Error extracting string. Unknown character",  sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine("\n%s%zu\n%u\n", "Error : buffer overload.\nLine : ", linenumber, __LINE__);
@@ -477,24 +484,24 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.x = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.y = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.z = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.w = (float)atof(buff);
 		return TRUE;
@@ -506,19 +513,19 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.x = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.y = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		c.z = (float)atof(buff);
 		return TRUE;
@@ -530,13 +537,13 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (VerifyToken('{') == FALSE)
+		if (!VerifyToken('{'))
 			return FALSE;
 		if (strcmp(buff, "TextureFilename") == 0) {
-			if (GetString(buff, blen, ';') == FALSE)
+			if (!GetString(buff, blen, ';'))
 				return FALSE;
 			p_material->filename = buff;
-			if (GetNextToken('}') == FALSE)
+			if (!GetNextToken('}'))
 				return FALSE;
 			return TRUE;
 		}
@@ -549,49 +556,50 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetColorRGBA(buff, blen, p_material->facecolor) == FALSE)
+		if (!GetColorRGBA(buff, blen, p_material->facecolor))
 			return FALSE;
 		if (VerifyToken(';')) {
-			if (GetNextToken(';') == FALSE)
+			if (!GetNextToken(';')) {
 				return FALSE;
+			}
 		}
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		p_material->power = (float)atof(buff);
-		if (GetColorRGB(buff, blen, p_material->specularcolor) == FALSE)
+		if (!GetColorRGB(buff, blen, p_material->specularcolor))
 			return FALSE;
 		if (VerifyToken(';')) {
-			if (GetNextToken(';') == FALSE)
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		if (GetColorRGB(buff, blen, p_material->emissivecolor) == FALSE)
+		if (!GetColorRGB(buff, blen, p_material->emissivecolor))
 			return FALSE;
 		if (VerifyToken(';')) {
-			if (GetNextToken(';') == FALSE)
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
 		while (TRUE) {
-			if (GetNextInput(IsValidEntry) == FALSE)
+			if (!GetNextInput(IsValidEntry))
 				break;
-			if (sfile.GetNextCharToProcess() == '}')
+			if (sfile.GetCurrentCharToProcess() == '}')
 				return TRUE;
-			if (sfile.GetNextCharToProcess() == '{') {
-				if (GetName(buff, blen, '}') == FALSE)
+			if (sfile.GetCurrentCharToProcess() == '{') {
+				if (!GetName(buff, blen, '}'))
 					return FALSE;
 				continue;
 			}
-			else if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-				buff[0] = sfile.GetNextCharToProcess();
+			else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+				buff[0] = sfile.GetCurrentCharToProcess();
 				buff[1] = '\0';
-				if (GetReservedWord(&buff[1], blen - 1, '{') == FALSE)
+				if (!GetReservedWord(&buff[1], blen - 1, '{'))
 					return FALSE;
-				if (GetMaterialAttributes(buff, blen, p_material) == FALSE)
+				if (!GetMaterialAttributes(buff, blen, p_material))
 					return FALSE;
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine("\n%s%zu\n%u\n", "Error GetMaterialBody.\nLine : ", linenumber, __LINE__);
@@ -604,7 +612,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
 
 		DWORD d = (DWORD)atoi(buff);
@@ -619,8 +627,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() == '{') {
-			if (GetName(buff, blen, '}') == FALSE)
+		if (sfile.GetCurrentCharToProcess() == '{') {
+			if (!GetName(buff, blen, '}'))
 				return FALSE;
 			for (std::size_t i=0; i<pmesh->p_extra->smeshmateriallist.size(); ++i) {
 				if (pmesh->p_extra->smeshmateriallist[i].name == std::string(buff))
@@ -628,15 +636,15 @@ namespace ns_HoLin
 			}
 			PrintOffendingLine("\n%s%s%s%zu\n%u\n", "Error could not find material named \'", buff, "\'\nLine : ", linenumber, __LINE__);
 		}
-		else if (sfile.GetNextCharToProcess() == 'M') {
-			buff[0] = sfile.GetNextCharToProcess();
+		else if (sfile.GetCurrentCharToProcess() == 'M') {
+			buff[0] = sfile.GetCurrentCharToProcess();
 			buff[1] = '\0';
-			if (GetReservedWord(&buff[1], blen - 1, '{') == FALSE)
+			if (!GetReservedWord(&buff[1], blen - 1, '{'))
 				return FALSE;
 			if (strcmp((const char*)"Material", (const char*)buff) == 0) {
 				ns_HoLin::sMaterial material;
 
-				if (GetMaterial(buff, blen, &material) == FALSE)
+				if (!GetMaterial(buff, blen, &material))
 					return FALSE;
 				pmesh->p_extra->smeshmateriallist.emplace_back(std::move(material));
 				return TRUE;
@@ -645,7 +653,7 @@ namespace ns_HoLin
 				PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown token", buff, "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshMaterialListBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -655,28 +663,28 @@ namespace ns_HoLin
 #endif
 		DWORD nmaterials = 0, number_of_face_indices = 0;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		nmaterials = (DWORD)atoi(buff);
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_face_indices = (DWORD)atoi(buff);
-		if (GetArray(buff, blen, (void*)&pmesh->p_extra->material_indices, number_of_face_indices, &cTextXFileParser::GetUnsignedInteger, FALSE) == FALSE)
+		if (!GetArray(buff, blen, (void*)&pmesh->p_extra->material_indices, number_of_face_indices, &cTextXFileParser::GetUnsignedInteger, FALSE))
 			return FALSE;
 		if (nmaterials == 0) {
-			if (GetNextToken('}') == FALSE)
+			if (!GetNextToken('}'))
 				return FALSE;
 		}
 		for (DWORD i = 0; i < nmaterials; ++i) {
-			if (GetNextInput(IsValidEntry) == FALSE)
+			if (!GetNextInput(IsValidEntry))
 				return FALSE;
-			if (sfile.GetNextCharToProcess() == '}')
+			if (sfile.GetCurrentCharToProcess() == '}')
 				break;
-			if (GetMeshMaterialListAttributes(buff, blen, pmesh) == FALSE)
+			if (!GetMeshMaterialListAttributes(buff, blen, pmesh))
 				return FALSE;
 		}
 		if (nmaterials != pmesh->p_extra->smeshmateriallist.size()) {
@@ -684,9 +692,7 @@ namespace ns_HoLin
 				"Error expecting", pmesh->p_extra->smeshmateriallist.size(), "materials got", nmaterials,
 				"materials.\nLine : ", linenumber, __LINE__);
 		}
-		if (GetNextToken('}') == FALSE)
-			return FALSE;
-		return TRUE;
+		return GetNextToken('}');
 	}
 
 	BOOL cTextXFileParser::GetMeshMaterialList(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -695,8 +701,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
-			if (GetNextToken('{') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetNextToken('{'))
 				return FALSE;
 		}
 		if (GetMeshMaterialListBody(buff, blen, pmesh))
@@ -712,7 +718,7 @@ namespace ns_HoLin
 
 		memset((void*)buff, 0, blen);
 		buff[0] = '\0';
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 		if (strlen(buff) > 0)
 			p_material->name = buff;
@@ -729,27 +735,27 @@ namespace ns_HoLin
 #endif
 		std::size_t limit = blen - 1;
 		
-		if (GetDigit(buff, blen) == FALSE)
+		if (!GetDigit(buff, blen))
 			return FALSE;
-		buff[0] = sfile.GetNextCharToProcess();
+		buff[0] = sfile.GetCurrentCharToProcess();
 		buff[1] = '\0';
 		for (std::size_t i = 1; i < blen; ++i) {
-			if (GetChar()) {
-				if (isdigit(sfile.GetNextCharToProcess())) {
-					buff[i] = sfile.GetNextCharToProcess();
+			if (GetNextChar()) {
+				if (isdigit(sfile.GetCurrentCharToProcess())) {
+					buff[i] = sfile.GetCurrentCharToProcess();
 					buff[i + 1] = '\0';
 				}
-				else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+				else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
 					return TRUE;
 				}
-				else if (sfile.GetNextCharToProcess() == '\r') {
+				else if (sfile.GetCurrentCharToProcess() == '\r') {
 					if (GetCarriageReturn() == FALSE)
 						break;
 					return TRUE;
 				}
-				if (sfile.GetNextCharToProcess() == ',' || sfile.GetNextCharToProcess() == ';') {
+				if (sfile.GetCurrentCharToProcess() == ',' || sfile.GetCurrentCharToProcess() == ';') {
 					if (getnexttoken) {
-						if (GetNextInput(IsValidSeperator) == FALSE)
+						if (!GetNextInput(IsValidSeperator))
 							return PrintOffendingLine(NULL);
 					}
 					return TRUE;
@@ -769,7 +775,7 @@ namespace ns_HoLin
 #endif
 
 		if (GetSignedDigit(buff, blen)) {
-			if (sfile.GetNextCharToProcess() == '-' || isdigit(sfile.GetNextCharToProcess())) {
+			if (sfile.GetCurrentCharToProcess() == '-' || isdigit(sfile.GetCurrentCharToProcess())) {
 				if (GetInteger(&buff[1], blen - 1)) {
 					return TRUE;
 				}
@@ -786,23 +792,23 @@ namespace ns_HoLin
 		std::size_t limit = blen - 1;
 
 		for (std::size_t i = 0; i < limit; ++i) {
-			if (GetChar() == FALSE)
+			if (!GetNextChar())
 				return FALSE;
-			if (isdigit(sfile.GetNextCharToProcess())) {
-				buff[i] = sfile.GetNextCharToProcess();
+			if (isdigit(sfile.GetCurrentCharToProcess())) {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[i + 1] = '\0';
 				continue;
 			}
-			else if (sfile.GetNextCharToProcess() == 'e' || sfile.GetNextCharToProcess() == 'E') {
-				buff[i] = sfile.GetNextCharToProcess();
+			else if (sfile.GetCurrentCharToProcess() == 'e' || sfile.GetCurrentCharToProcess() == 'E') {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[i + 1] = '\0';
 				if (GetExponent(&buff[i + 1], (blen - i + 1)))
 					return TRUE;
 			}
-			else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+			else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 				return TRUE;
-			else if (sfile.GetNextCharToProcess() == '\r') {
-				if (GetChar() == FALSE)
+			else if (sfile.GetCurrentCharToProcess() == '\r') {
+				if (!GetNextChar())
 					return FALSE;
 				return TRUE;
 			}
@@ -821,35 +827,35 @@ namespace ns_HoLin
 		std::size_t limit = blen - 1;
 
 		for (std::size_t i = 0; i < limit; ) {
-			if (GetChar() == FALSE)
+			if (!GetNextChar())
 				return FALSE;
-			if (isdigit(sfile.GetNextCharToProcess())) {
-				buff[i] = sfile.GetNextCharToProcess();
+			if (isdigit(sfile.GetCurrentCharToProcess())) {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[++i] = '\0';
 				continue;
 			}
-			else if (sfile.GetNextCharToProcess() == '.') {
-				buff[i] = sfile.GetNextCharToProcess();
+			else if (sfile.GetCurrentCharToProcess() == '.') {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[i + 1] = '\0';
-				if (GetFraction(&buff[i + 1], (blen - i - 1)) == FALSE)
+				if (!GetFraction(&buff[i + 1], (blen - i - 1)))
 					return FALSE;
 				break;
 			}
-			else if (sfile.GetNextCharToProcess() == 'e' || sfile.GetNextCharToProcess() == 'E') {
-				buff[i] = sfile.GetNextCharToProcess();
+			else if (sfile.GetCurrentCharToProcess() == 'e' || sfile.GetCurrentCharToProcess() == 'E') {
+				buff[i] = sfile.GetCurrentCharToProcess();
 				buff[i + 1] = '\0';
-				if (GetExponent(&buff[i + 1], (blen - i - 1)) == FALSE)
+				if (!GetExponent(&buff[i + 1], (blen - i - 1)))
 					return FALSE;
 				break;
 			}
-			else if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+			else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
 				break;
 			}
-			else if (sfile.GetNextCharToProcess() == '\r') {
-				if (GetChar() == FALSE)
+			else if (sfile.GetCurrentCharToProcess() == '\r') {
+				if (!GetNextChar())
 					return FALSE;
 			}
-			else if (sfile.GetNextCharToProcess() == '/') {
+			else if (sfile.GetCurrentCharToProcess() == '/') {
 				if (GetComment() == FALSE)
 					return FALSE;
 				break;
@@ -869,7 +875,7 @@ namespace ns_HoLin
 		if (GetSignedDigit(buff, blen)) {
 			if (GetInteger(&buff[1], blen - 1)) {
 				if (getnexttoken) {
-					if (GetNextInput(IsValidSeperator) == FALSE)
+					if (!GetNextInput(IsValidSeperator))
 						return FALSE;
 				}
 				return TRUE;
@@ -885,7 +891,7 @@ namespace ns_HoLin
 #endif
 		float value = 0.0;
 
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
 		value = (float)atof(buff);
 		((std::vector<float>*)plist)->emplace_back(value);
@@ -899,19 +905,19 @@ namespace ns_HoLin
 #endif
 		DirectX::XMFLOAT3 f;
 
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		f.x = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		f.y = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		f.z = (float)atof(buff);
 		((std::vector<DirectX::XMFLOAT3>*)plist)->emplace_back(f);
@@ -923,13 +929,13 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		if (GetNextToken('{') == FALSE) {
+		if (!GetNextToken('{')) {
 			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
 		}
-		if (GetVectorBody(buff, blen, plist) == FALSE) {
+		if (!GetVectorBody(buff, blen, plist)) {
 			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
 		}
-		if (GetNextToken('}') == FALSE) {
+		if (!GetNextToken('}')) {
 			return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
 		}
 		return TRUE;
@@ -942,7 +948,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
 		((std::vector<DWORD>*)polygon)->emplace_back((DWORD)atoi(buff));
 		return TRUE;
@@ -956,25 +962,25 @@ namespace ns_HoLin
 		DWORD number_of_vertices_in_polygon = 0;
 		std::vector<DWORD> polygon_indices;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_vertices_in_polygon = (DWORD)atoi(buff);
-		if (GetArray(buff, blen, (void*)&polygon_indices, number_of_vertices_in_polygon, &cTextXFileParser::GetPolygon, FALSE) == FALSE)
+		if (!GetArray(buff, blen, (void*)&polygon_indices, number_of_vertices_in_polygon, &cTextXFileParser::GetPolygon, FALSE))
 			return FALSE;
 		((std::vector<std::vector<DWORD>>*)polygons)->emplace_back(std::move(polygon_indices));
-		if (sfile.GetNextCharToProcess() == ';' || sfile.GetNextCharToProcess() == ',') {
+		if (sfile.GetCurrentCharToProcess() == ';' || sfile.GetCurrentCharToProcess() == ',') {
 			return TRUE;
 		}
 		else {
-			if (GetNextInput(IsValidSeperator) == FALSE)
+			if (!GetNextInput(IsValidSeperator))
 				return FALSE;
-			else if (sfile.GetNextCharToProcess() == ';' || sfile.GetNextCharToProcess() == ',') {
+			else if (sfile.GetCurrentCharToProcess() == ';' || sfile.GetCurrentCharToProcess() == ',') {
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpecting token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpecting token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFaces(char *buff, std::size_t blen, ns_HoLin::sMeshFaces &meshfaces)
@@ -985,15 +991,15 @@ namespace ns_HoLin
 		DWORD number_of_faces = 0;
 		std::size_t number_of_indices = 0;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
 		number_of_faces = (DWORD)atoi(buff);
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		meshfaces.facevertexindices.reserve((std::size_t)number_of_faces);
-		if (GetArray(buff, blen, (void*)&meshfaces.facevertexindices, number_of_faces, &cTextXFileParser::GetPolygons) == FALSE)
+		if (!GetArray(buff, blen, (void*)&meshfaces.facevertexindices, number_of_faces, &cTextXFileParser::GetPolygons))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() == ';') {
+		if (sfile.GetCurrentCharToProcess() == ';') {
 			for (auto f : meshfaces.facevertexindices) {
 				if (f.size() > 0)
 					number_of_indices += f.size();
@@ -1001,7 +1007,7 @@ namespace ns_HoLin
 			meshfaces.number_of_indices = (DWORD)number_of_indices;
 			return TRUE;
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \';\', got", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \';\', got", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetArray(char *buff, std::size_t blen, void *plist, DWORD number_of_entries, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*), BOOL getnextinput)
@@ -1011,12 +1017,12 @@ namespace ns_HoLin
 #endif
 
 		for (DWORD i = 0; i < number_of_entries; ++i) {
-			if ((this->*pCallBackFunction)(buff, blen, plist) == FALSE) {
+			if (!(this->*pCallBackFunction)(buff, blen, plist)) {
 				return FALSE;
 			}
-			if (sfile.GetNextCharToProcess() == ',')
+			if (sfile.GetCurrentCharToProcess() == ',')
 				continue;
-			else if (sfile.GetNextCharToProcess() == ';') {
+			else if (sfile.GetCurrentCharToProcess() == ';') {
 				if (getnextinput == FALSE) {
 					if ((i + 1) == number_of_entries)
 						break;
@@ -1035,11 +1041,11 @@ namespace ns_HoLin
 
 					}
 				}
-				if (GetNextInput(IsValidSeperator) == FALSE)
+				if (!GetNextInput(IsValidSeperator))
 					return FALSE;
-				if (sfile.GetNextCharToProcess() == ',')
+				if (sfile.GetCurrentCharToProcess() == ',')
 					continue;
-				else if (sfile.GetNextCharToProcess() == ';') {
+				else if (sfile.GetCurrentCharToProcess() == ';') {
 					if ((i + 1) == number_of_entries)
 						break;
 					else {
@@ -1048,9 +1054,9 @@ namespace ns_HoLin
 				}
 			}
 		}
-		if (sfile.GetNextCharToProcess() == ';' || sfile.GetNextCharToProcess() == ',')
+		if (sfile.GetCurrentCharToProcess() == ';' || sfile.GetCurrentCharToProcess() == ',')
 			return TRUE;
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::Get2DArray(char *buff, std::size_t blen, void *plist, DWORD rows, DWORD cols, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*, DWORD, DWORD))
@@ -1061,28 +1067,28 @@ namespace ns_HoLin
 
 		for (DWORD i = 0; i < rows; ++i) {
 			for (DWORD j = 0; j < cols; ++j) {
-				if ((this->*pCallBackFunction)(buff, blen, plist, i, j) == FALSE)
+				if (!(this->*pCallBackFunction)(buff, blen, plist, i, j))
 					return FALSE;
-				if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+				if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
 					if (GetNextInput(IsValidSeperator) == FALSE) {
-						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 					}
 				}
-				if (sfile.GetNextCharToProcess() == ',')
+				if (sfile.GetCurrentCharToProcess() == ',')
 					continue;
-				if (sfile.GetNextCharToProcess() == ';') {
+				if (sfile.GetCurrentCharToProcess() == ';') {
 					if (i != j) {
-						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 					}
 					else
 						continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 				}
 			}
 		}
-		if (sfile.GetNextCharToProcess() == ';' || sfile.GetNextCharToProcess() == ',') {
+		if (sfile.GetCurrentCharToProcess() == ';' || sfile.GetCurrentCharToProcess() == ',') {
 			return TRUE;
 		}
 		return PrintOffendingLine(NULL);
@@ -1109,13 +1115,13 @@ namespace ns_HoLin
 		DWORD number_of_indices_in_polygon = 0;
 		std::vector<DWORD> entries;
 		
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_indices_in_polygon = (DWORD)atoi(buff);
 		entries.reserve((std::size_t)number_of_indices_in_polygon);
-		if (GetArray(buff, blen, (void*)&entries, number_of_indices_in_polygon, &cTextXFileParser::GetPolygon, FALSE) == FALSE)
+		if (!GetArray(buff, blen, (void*)&entries, number_of_indices_in_polygon, &cTextXFileParser::GetPolygon, FALSE))
 			return FALSE;
 		((std::vector<std::vector<DWORD>>*)plist)->emplace_back(std::move(entries));
 		return TRUE;
@@ -1127,26 +1133,24 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 
 		DWORD number_of_normals = (DWORD)atoi(buff);
 		DWORD number_of_face_indices = 0;
 
 		p_meshnormals->normals.reserve((std::size_t)number_of_normals);
-		if (GetArray(buff, blen, (void*)&p_meshnormals->normals, number_of_normals, &cTextXFileParser::GetVectorBody) == FALSE)
+		if (!GetArray(buff, blen, (void*)&p_meshnormals->normals, number_of_normals, &cTextXFileParser::GetVectorBody))
 			return FALSE;
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_face_indices = (DWORD)atoi(buff);
 		p_meshnormals->facenormals.reserve((std::size_t)number_of_face_indices);
-		if (GetArray(buff, blen, (void*)&p_meshnormals->facenormals, number_of_face_indices, &cTextXFileParser::GetNormalFaceIndices) == FALSE)
-			return FALSE;
-		return TRUE;
+		return GetArray(buff, blen, (void*)&p_meshnormals->facenormals, number_of_face_indices, &cTextXFileParser::GetNormalFaceIndices);
 	}
 
 	BOOL cTextXFileParser::GetMeshNormals(char *buff, std::size_t blen, ns_HoLin::sMeshNormals *p_meshnormals)
@@ -1155,24 +1159,24 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
-			if (GetNextInput(IsValidCharOpening) == FALSE) {
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetNextInput(IsValidCharOpening)) {
 				return FALSE;
 			}
-			if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+			if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
-		if (sfile.GetNextCharToProcess() == '{') {
+		if (sfile.GetCurrentCharToProcess() == '{') {
 			if (GetMeshNormalsBody(buff, blen, p_meshnormals)) {
-				if (sfile.GetNextCharToProcess() == '}')
+				if (sfile.GetCurrentCharToProcess() == '}')
 					return TRUE;
 				else {
 					if (GetNextInput(IsValidCharClosing)) {
-						if (sfile.GetNextCharToProcess() == '}')
+						if (sfile.GetCurrentCharToProcess() == '}')
 							return TRUE;
 						else {
-							return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \'}\' got", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+							return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \'}\' got", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 						}
 					}
 				}
@@ -1188,14 +1192,14 @@ namespace ns_HoLin
 #endif
 		DirectX::XMFLOAT2 f;
 
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		f.x = (float)atof(buff);
-		if (GetFloat(buff, blen) == FALSE)
+		if (!GetFloat(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		f.y = (float)atof(buff);
 		((std::vector<DirectX::XMFLOAT2>*)plist)->emplace_back(f);
@@ -1215,9 +1219,7 @@ namespace ns_HoLin
 			return FALSE;
 		number_of_texture_coord = (DWORD)atoi(buff);
 		t.reserve((std::size_t)number_of_texture_coord);
-		if (GetArray(buff, blen, (void*)&t, number_of_texture_coord, &cTextXFileParser::GetCoord2D) == FALSE)
-			return FALSE;
-		return TRUE;
+		return GetArray(buff, blen, (void*)&t, number_of_texture_coord, &cTextXFileParser::GetCoord2D);
 	}
 
 	BOOL cTextXFileParser::GetMeshTextureCoord(char *buff, std::size_t blen, std::vector<DirectX::XMFLOAT2> &t)
@@ -1226,8 +1228,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
-			if (GetNextToken('{') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetNextToken('{'))
 				return FALSE;
 		}
 		if (GetMeshTextureCoordBody(buff, blen, t)) {
@@ -1244,32 +1246,32 @@ namespace ns_HoLin
 #endif
 		ns_HoLin::sSkinWeights skinning;
 
-		if (GetString(buff, blen, ';') == FALSE)
+		if (!GetString(buff, blen, ';'))
 			return FALSE;
 		skinning.transformNodeName = buff;
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		skinning.nWeights = (DWORD)atoi(buff);
 		if (skinning.nWeights > 0) {
-			if (GetArray(buff, blen, (void*)&skinning.p_vertexIndices, skinning.nWeights, &cTextXFileParser::GetUnsignedInteger, FALSE) == FALSE)
+			if (!GetArray(buff, blen, (void*)&skinning.p_vertexIndices, skinning.nWeights, &cTextXFileParser::GetUnsignedInteger, FALSE))
 				return FALSE;
-			if (VerifyToken(';') == FALSE)
+			if (!VerifyToken(';'))
 				return FALSE;
-			if (GetArray(buff, blen, (void*)&skinning.p_weights, skinning.nWeights, &cTextXFileParser::GetFloat, FALSE) == FALSE)
+			if (!GetArray(buff, blen, (void*)&skinning.p_weights, skinning.nWeights, &cTextXFileParser::GetFloat, FALSE))
 				return FALSE;
-			if (VerifyToken(';') == FALSE)
+			if (!VerifyToken(';'))
 				return FALSE;
 		}
-		if (Get2DArray(buff, blen, (void*)&skinning.matrixOffset, (DWORD)4, (DWORD)4, &cTextXFileParser::GetMatrixBody) == FALSE)
+		if (!Get2DArray(buff, blen, (void*)&skinning.matrixOffset, (DWORD)4, (DWORD)4, &cTextXFileParser::GetMatrixBody))
 			return FALSE;
 		p_mesh->p_extra->p_skininfo->p_skin_weights.emplace_back(std::move(skinning));
-		if (GetNextToken(';') == FALSE)
+		if (!GetNextToken(';'))
 			return FALSE;
-		if (GetNextToken('}'))
-			return TRUE;
-		return PrintOffendingLine(NULL);
+		if (!GetNextToken('}'))
+			return PrintOffendingLine(NULL);
+		return TRUE;
 	}
 
 	BOOL cTextXFileParser::GetSkinWeights(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
@@ -1291,19 +1293,19 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
-		if (GetNextToken('}') == FALSE)
+		if (!GetNextToken('}'))
 			return FALSE;
 		return TRUE;
 	}
@@ -1315,12 +1317,12 @@ namespace ns_HoLin
 #endif
 
 		if (GetNextInput(IsValidEntry)) {
-			if (sfile.GetNextCharToProcess() == '{') {
+			if (sfile.GetCurrentCharToProcess() == '{') {
 				if (GetXSkinMeshHeaderBody(buff, blen, p_mesh))
 					return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetVertexDuplicationIndicesBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
@@ -1329,30 +1331,30 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return functioncalls.PrintHistoryLog();
 		p_mesh->p_extra->sduplicates.nIndices = (DWORD)std::atoi(buff);
-		if (sfile.GetNextCharToProcess() != ';') {
-			if (GetNextToken(';') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != ';') {
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return functioncalls.PrintHistoryLog();
-		if (sfile.GetNextCharToProcess() != ';') {
-			if (GetNextToken(';') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != ';') {
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
 		p_mesh->p_extra->sduplicates.nOriginalVertices = (DWORD)std::atoi(buff);
-		if (GetArray(buff, blen, (void*)&p_mesh->p_extra->sduplicates.Indices, (DWORD)p_mesh->p_extra->sduplicates.nIndices, &cTextXFileParser::GetUnsignedInteger, FALSE) == FALSE)
+		if (!GetArray(buff, blen, (void*)&p_mesh->p_extra->sduplicates.Indices, (DWORD)p_mesh->p_extra->sduplicates.nIndices, &cTextXFileParser::GetUnsignedInteger, FALSE))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() == ';') {
-			if (sfile.GetNextCharToProcess() != '}') {
-				if (GetNextToken('}') == FALSE)
+		if (sfile.GetCurrentCharToProcess() == ';') {
+			if (sfile.GetCurrentCharToProcess() != '}') {
+				if (!GetNextToken('}'))
 					return FALSE;
 			}
 		}
 		else {
-			return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting token \';\' got", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting token \';\' got", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -1364,11 +1366,11 @@ namespace ns_HoLin
 #endif
 
 		if (p_mesh) {
-			if (sfile.GetNextCharToProcess() != '{') {
+			if (sfile.GetCurrentCharToProcess() != '{') {
 				if (GetNextToken('{') == FALSE)
 					return FALSE;
 			}
-			if (GetVertexDuplicationIndicesBody(buff, blen, p_mesh) == FALSE)
+			if (!GetVertexDuplicationIndicesBody(buff, blen, p_mesh))
 				return FALSE;
 		}
 		else {
@@ -1384,20 +1386,20 @@ namespace ns_HoLin
 #endif
 		ns_HoLin::sIndexedColor c;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
-			if (GetNextToken(';') == FALSE)
+		if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		if (sfile.GetNextCharToProcess() == ';') {
+		if (sfile.GetCurrentCharToProcess() == ';') {
 			c.index = (DWORD)std::atoi(buff);
 			if (GetColorRGBA(buff, blen, c.indexColor)) {
 				((std::vector<ns_HoLin::sIndexedColor>*)plist)->emplace_back(c);
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshVertexColorsBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -1407,9 +1409,9 @@ namespace ns_HoLin
 #endif
 		DWORD nVertexColors; // should equal number of polygons in mesh
 
-		if (pmesh == NULL)
+		if (!pmesh)
 			return PrintOffendingLine("\n%s%zu\n%u\n", "Error no mesh declared.\nLine : ", linenumber, __LINE__);
-		if (GetUnsignedInteger(buff, blen, ';') == FALSE)
+		if (!GetUnsignedInteger(buff, blen, ';'))
 			return FALSE;
 		nVertexColors = (DWORD)std::atoi(buff);
 		if (pmesh->meshfaces.number_of_indices == nVertexColors) {
@@ -1427,14 +1429,14 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (GetNextToken('{') == FALSE)
 				return FALSE;
 		}
-		if (GetMeshVertexColorsBody(buff, blen, pmesh) == FALSE)
+		if (!GetMeshVertexColorsBody(buff, blen, pmesh))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() != '}') {
-			if (GetNextToken('}') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '}') {
+			if (!GetNextToken('}'))
 				return FALSE;
 		}
 		return TRUE;
@@ -1446,8 +1448,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-			buff[0] = sfile.GetNextCharToProcess();
+		if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+			buff[0] = sfile.GetCurrentCharToProcess();
 			buff[1] = '\0';
 			if (GetReservedWord(&buff[1], blen - 1, '{')) {
 				if (p_mesh->p_extra == nullptr) {
@@ -1513,7 +1515,7 @@ namespace ns_HoLin
 				}
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
@@ -1523,30 +1525,30 @@ namespace ns_HoLin
 #endif
 		DWORD number_of_vertices = 0;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 				return FALSE;
 		number_of_vertices = (DWORD)atoi(buff);
 		p_mesh->vertices.reserve((std::size_t)(number_of_vertices * sizeof(DirectX::XMFLOAT3)));
-		if (GetVertices(buff, blen, p_mesh->vertices, number_of_vertices) == FALSE)
+		if (!GetVertices(buff, blen, p_mesh->vertices, number_of_vertices))
 			return FALSE;
-		if (GetFaces(buff, blen, p_mesh->meshfaces) == FALSE)
+		if (!GetFaces(buff, blen, p_mesh->meshfaces))
 			return FALSE;
 		while (TRUE) {
-			if (GetNextInput(IsValidEntry) == FALSE) {
+			if (!GetNextInput(IsValidEntry)) {
 				if (sfile.GetEndOfFileStatus()) {
 					return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file. Possibly missing \'}\'\nLine : ", linenumber, __LINE__);
 				}
 				return FALSE;
 			}
-			if (sfile.GetNextCharToProcess() == '}')
+			if (sfile.GetCurrentCharToProcess() == '}')
 				break;
-			else if (std::isalpha((int)sfile.GetNextCharToProcess())) {
+			else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
 				if (GetMeshAttributes(buff, blen, p_mesh) == FALSE)
 					return FALSE;
 			}
-			else if (sfile.GetNextCharToProcess() == '{') {
+			else if (sfile.GetCurrentCharToProcess() == '{') {
 				if (GetName(buff, blen, '}') == FALSE)
 					return FALSE;
 				for (std::size_t i = 0; i < xfiledata.smateriallist.size(); ++i) {
@@ -1556,7 +1558,7 @@ namespace ns_HoLin
 				return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error could not find material", buff, "Line : ", linenumber, __LINE__);
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error, unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error, unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		return TRUE;
@@ -1570,7 +1572,7 @@ namespace ns_HoLin
 
 		memset((void*)buff, 0, blen);
 		buff[0] = '\0';
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 		if (strlen(buff) > 0)
 			p_mesh->name = buff;
@@ -1594,7 +1596,7 @@ namespace ns_HoLin
 
 		memset((void*)buff, 0, blen);
 		buff[0] = '\0';
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 
 		ns_HoLin::sSequenceOfFrames *pseq = xfiledata.sframeslist.GetLastSequence();
@@ -1676,12 +1678,12 @@ namespace ns_HoLin
 
 		while (TRUE) {
 			if (GetNextInput(IsValidEntry)) {
-				if (sfile.GetNextCharToProcess() == '{') {
+				if (sfile.GetCurrentCharToProcess() == '{') {
 					if (GetName(buff, blen, '}') == FALSE)
 						return FALSE;
 					pseq = xfiledata.sframeslist.SearchSequence(std::string(buff));
 					if (pseq == nullptr) {
-						if (xfiledata.smeshlist.Find(std::string(buff)) == FALSE) {
+						if (!xfiledata.smeshlist.Find(std::string(buff))) {
 							return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error could not find object reference", buff, "Line : ", linenumber, __LINE__);
 						}
 						pframe->mesh.emplace_back(std::string(buff));
@@ -1693,11 +1695,11 @@ namespace ns_HoLin
 					}
 					continue;
 				}
-				else if (sfile.GetNextCharToProcess() == '}') {
+				else if (sfile.GetCurrentCharToProcess() == '}') {
 					return TRUE;
 				}
-				else if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-					buff[0] = sfile.GetNextCharToProcess();
+				else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+					buff[0] = sfile.GetCurrentCharToProcess();
 					buff[1] = '\0';
 					if (GetReservedWord(&buff[1], blen - 1, '{') == FALSE)
 						return FALSE;
@@ -1706,7 +1708,7 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Encountered error. Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Encountered error. Unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
@@ -1716,7 +1718,7 @@ namespace ns_HoLin
 				break;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFrame(char *buff, std::size_t blen, ns_HoLin::sSequenceOfFrames *pseq)
@@ -1727,7 +1729,7 @@ namespace ns_HoLin
 		std::string name;
 
 		buff[0] = '\0';
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 
 		ns_HoLin::sFrame *pframe = pseq->CreateNewFrame();
@@ -1754,23 +1756,23 @@ namespace ns_HoLin
 		DWORD number_of_entries = 0;
 		float value = 0.0f;
 
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_entries = (DWORD)atoi(buff);
 		for (DWORD i = 0; i < number_of_entries; ++i) {
-			if (GetFloat(buff, blen) == FALSE)
+			if (!GetFloat(buff, blen))
 				return FALSE;
-			if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
-				if (GetNextInput(IsValidSeperator) == FALSE)
+			if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
+				if (!GetNextInput(IsValidSeperator))
 					return FALSE;
 			}
 			value = static_cast<float>(atof(buff));
 			((ns_HoLin::sTimedFloatKeys*)v)->tfkeys.emplace_back(value);
-			if (sfile.GetNextCharToProcess() == ',')
+			if (sfile.GetCurrentCharToProcess() == ',')
 				continue;
-			else if (sfile.GetNextCharToProcess() == ';') {
+			else if (sfile.GetCurrentCharToProcess() == ';') {
 				if ((i + 1) == number_of_entries)
 					continue;
 				else {
@@ -1778,12 +1780,12 @@ namespace ns_HoLin
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
-		if (sfile.GetNextCharToProcess() == ';')
+		if (sfile.GetCurrentCharToProcess() == ';')
 			return TRUE;
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetTimedFloatKeys(char *buff, std::size_t blen, void *v)
@@ -1793,14 +1795,14 @@ namespace ns_HoLin
 #endif
 		ns_HoLin::sTimedFloatKeys time_slot;
 		
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		time_slot.time = (DWORD)atoi(buff);
-		if (GetFloatKeysBody(buff, blen, (void*)&time_slot) == FALSE)
+		if (!GetFloatKeysBody(buff, blen, (void*)&time_slot))
 			return FALSE;
-		if (GetNextToken(';') == FALSE)
+		if (!GetNextToken(';'))
 			return FALSE;
 		((std::vector<ns_HoLin::sTimedFloatKeys>*)v)->emplace_back(std::move(time_slot));
 		return TRUE;
@@ -1814,20 +1816,20 @@ namespace ns_HoLin
 		DWORD number_of_keys = 0;
 		std::vector<ns_HoLin::sTimedFloatKeys> transform_data;
 		
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		p_anim_data->type_of_transform = (DWORD)atoi(buff);
 		if (p_anim_data->type_of_transform >= 3) {
 			return PrintOffendingLine("\n%s%zu\n%u\n", "Error transform type must be 0, 1, or 2.\nLine : ", linenumber, __LINE__);
 		}
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_keys = (DWORD)atoi(buff);
-		if (GetArray(buff, blen, (void*)&p_anim_data->transformation_data, number_of_keys, &cTextXFileParser::GetTimedFloatKeys) == FALSE)
+		if (!GetArray(buff, blen, (void*)&p_anim_data->transformation_data, number_of_keys, &cTextXFileParser::GetTimedFloatKeys))
 			return FALSE;
 		//p_anim_data->transformation_data = transform_data;
 		return TRUE;
@@ -1839,13 +1841,13 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (GetNextToken('{') == FALSE)
 				return FALSE;
 		}
-		if (GetAnimationKeyBody(buff, blen, p_anim_data) == FALSE)
+		if (!GetAnimationKeyBody(buff, blen, p_anim_data))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() != '}') {
+		if (sfile.GetCurrentCharToProcess() != '}') {
 			if (GetNextToken('}') == FALSE) {
 				return FALSE;
 			}
@@ -1859,10 +1861,10 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() != ';') {
-			if (GetNextToken(';') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != ';') {
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
 		DWORD openclosed = (DWORD)std::atoi(buff);
@@ -1870,18 +1872,18 @@ namespace ns_HoLin
 		if (openclosed > 1) {
 			return PrintOffendingLine("\n%s%zu\n%u\n", "Error AnimationOptions, is either open or closed.\nLine : ", linenumber, __LINE__);
 		}
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		if (sfile.GetNextCharToProcess() != ';') {
-			if (GetNextToken(';') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != ';') {
+			if (!GetNextToken(';'))
 				return FALSE;
 		}
 		DWORD positionquality = (DWORD)std::atoi(buff);
 		if (positionquality > 1) {
 			return PrintOffendingLine("\n%s%zu\n%u\n", "Error AnimationOptions, position quality is either linear or spline.\nLine : ", linenumber, __LINE__);
 		}
-		if (sfile.GetNextCharToProcess() != '}') {
-			if (GetNextToken('}') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '}') {
+			if (!GetNextToken('}'))
 				return FALSE;
 		}
 		return TRUE;
@@ -1893,8 +1895,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		
-		if (sfile.GetNextCharToProcess() != '{') {
-			if (GetNextToken('{') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetNextToken('{'))
 				return FALSE;
 		}
 		return GetAnimationOptionsBody(buff, blen);
@@ -1907,27 +1909,27 @@ namespace ns_HoLin
 #endif
 		
 		while (TRUE) {
-			if (GetNextInput(IsValidEntry) == FALSE)
+			if (!GetNextInput(IsValidEntry))
 				break;
-			if (sfile.GetNextCharToProcess() == '{') {
-				if (GetName(buff, blen, '}') == FALSE)
+			if (sfile.GetCurrentCharToProcess() == '{') {
+				if (!GetName(buff, blen, '}'))
 					break;
 				if (strlen(buff) == 0) {
 					return PrintOffendingLine("\n%s%zu\n%u\n", "Error no name entry.\nLine : ", linenumber, __LINE__);
 				}
 				std::string s(buff);
 				
-				if (xfiledata.sframeslist.FindFrames(s) == FALSE) {
-					if (xfiledata.smeshlist.Find(s) == FALSE) {
+				if (!xfiledata.sframeslist.FindFrames(s)) {
+					if (!xfiledata.smeshlist.Find(s)) {
 						return PrintOffendingLine("\n%s\'%s\'\n%s%zu\n%u\n", "Could not find object reference", buff, "Line : ", linenumber, __LINE__);
 					}
 				}
 				p_animation->list_of_objects.emplace_back(s);
 			}
-			else if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-				buff[0] = sfile.GetNextCharToProcess();
+			else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+				buff[0] = sfile.GetCurrentCharToProcess();
 				buff[1] = '\0';
-				if (GetReservedWord(&buff[1], blen - 1, '{') == FALSE)
+				if (!GetReservedWord(&buff[1], blen - 1, '{'))
 					return FALSE;
 				if (strcmp(buff, "AnimationKey") == 0) {
 					ns_HoLin::sAnimation_Data *p_anim_data = p_animation->CreateAnimation_Data();
@@ -1935,22 +1937,22 @@ namespace ns_HoLin
 					if (p_anim_data == nullptr) {
 						return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 					}
-					if (GetAnimationKey(buff, blen, p_anim_data) == FALSE)
+					if (!GetAnimationKey(buff, blen, p_anim_data))
 						return FALSE;
 				}
 				else if (strcmp(buff, "AnimationOptions") == 0) {
-					if (GetAnimationOptions(buff, blen) == FALSE)
+					if (!GetAnimationOptions(buff, blen))
 						return FALSE;
 				}
 				else {
 					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown token", buff, "Line : ", linenumber, __LINE__);
 				}
 			}
-			else if (sfile.GetNextCharToProcess() == '}') {
+			else if (sfile.GetCurrentCharToProcess() == '}') {
 				return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine(NULL);
@@ -1966,16 +1968,16 @@ namespace ns_HoLin
 
 		buff[0] = '\0';
 		memset((void*)buff, 0, blen);
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 		if (strlen(buff) == 0) {
 			CreateName(buff, blen);
 			strcat_s(buff, blen, "_Animation");
 		}
 		name = buff;
-		if (sfile.GetNextCharToProcess() != '{') {
+		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (GetNextToken('{') == FALSE) {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		if (pset) {
@@ -2000,10 +2002,10 @@ namespace ns_HoLin
 #endif
 
 		while (TRUE) {
-			if (GetNextInput(IsValidEntry) == FALSE)
+			if (!GetNextInput(IsValidEntry))
 				break;
-			if (std::isalpha((int)sfile.GetNextCharToProcess())) {
-				buff[0] = sfile.GetNextCharToProcess();
+			if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+				buff[0] = sfile.GetCurrentCharToProcess();
 				buff[1] = '\0';
 				if (GetReservedWord(&buff[1], blen - 1, '{') == FALSE)
 					return FALSE;
@@ -2015,10 +2017,10 @@ namespace ns_HoLin
 					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error expecting \'Animation\', but got", buff, "Line : ", linenumber, __LINE__);
 				}
 			}
-			else if (sfile.GetNextCharToProcess() == '}')
+			else if (sfile.GetCurrentCharToProcess() == '}')
 				return TRUE;
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
@@ -2033,7 +2035,7 @@ namespace ns_HoLin
 
 		buff[0] = '\0';
 		memset((void*)buff, 0, blen);
-		if (GetTemplateName(buff, blen) == FALSE)
+		if (!GetTemplateName(buff, blen))
 			return FALSE;
 		if (strlen(buff) == 0) {
 			CreateName(buff, blen);
@@ -2056,18 +2058,16 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != '{') {
-			if (GetNextToken('{') == FALSE)
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetNextToken('{'))
 				return FALSE;
 		}
-		if (GetUnsignedInteger(buff, blen) == FALSE)
+		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
 		xfiledata.sanimationsetlist.animtickspersecond = (DWORD)atoi(buff);
-		if (VerifyToken(';') == FALSE)
+		if (!VerifyToken(';'))
 			return FALSE;
-		if (GetNextToken('}') == FALSE)
-			return FALSE;
-		return TRUE;
+		return GetNextToken('}');
 	}
 
 	BOOL cTextXFileParser::ExtractTemplates(char *buff, std::size_t blen)
@@ -2125,17 +2125,17 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (sfile.GetNextCharToProcess() != token) {
-			if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess())) {
+		if (sfile.GetCurrentCharToProcess() != token) {
+			if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
 				if (GetNextToken(token)) {
 					return TRUE;
 				}
 			}
 		}
-		if (sfile.GetNextCharToProcess() == token)
+		if (sfile.GetCurrentCharToProcess() == token)
 			return TRUE;
 		return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n\n",
-			"Error unexpected token", sfile.GetNextCharToProcess(), "expecting", token, "Line : ", linenumber, __LINE__);
+			"Error unexpected token", sfile.GetCurrentCharToProcess(), "expecting", token, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetCarriageReturn()
@@ -2144,8 +2144,8 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetChar()) {
-			if (sfile.GetNextCharToProcess() != '\n') {
+		if (GetNextChar()) {
+			if (sfile.GetCurrentCharToProcess() != '\n') {
 				return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected carriage return.\nLine : ", linenumber, __LINE__);
 			}
 		}
@@ -2162,14 +2162,14 @@ namespace ns_HoLin
 #endif
 
 		while (TRUE) {
-			if (GetChar()) {
-				if (sfile.GetNextCharToProcess() == '\r') {
+			if (GetNextChar()) {
+				if (sfile.GetCurrentCharToProcess() == '\r') {
 					if (GetCarriageReturn())
 						return TRUE;
 					else
 						break;
 				}
-				else if (sfile.GetNextCharToProcess() == '\n')
+				else if (sfile.GetCurrentCharToProcess() == '\n')
 					return TRUE;
 			}
 			else {
@@ -2187,13 +2187,13 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (GetChar()) {
-			if (sfile.GetNextCharToProcess() == '/') {
+		if (GetNextChar()) {
+			if (sfile.GetCurrentCharToProcess() == '/') {
 				if (ReadCommentChar())
 					return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s%c%s\n%zu\n%u\n", "Unexpected token \'", sfile.GetNextCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%c%s\n%zu\n%u\n", "Unexpected token \'", sfile.GetCurrentCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
@@ -2206,26 +2206,26 @@ namespace ns_HoLin
 #endif
 
 		while (TRUE) {
-			if (GetChar()) {
-				if (func((int)sfile.GetNextCharToProcess()))
+			if (GetNextChar()) {
+				if (func((int)sfile.GetCurrentCharToProcess()))
 					return TRUE;
-				if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+				if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 					continue;
-				else if (sfile.GetNextCharToProcess() == '/') {
+				else if (sfile.GetCurrentCharToProcess() == '/') {
 					if (GetComment())
 						continue;
 					else {
 						break;
 					}
 				}
-				else if (sfile.GetNextCharToProcess() == '\r') {
+				else if (sfile.GetCurrentCharToProcess() == '\r') {
 					if (GetCarriageReturn() == FALSE) {
 						break;
 					}
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s%c%s%zu\n%u\n", "Unexpected token \'", sfile.GetNextCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%c%s%zu\n%u\n", "Unexpected token \'", sfile.GetCurrentCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
@@ -2244,12 +2244,12 @@ namespace ns_HoLin
 #endif
 
 		while (TRUE) {
-			if (GetChar()) {
-				if (sfile.GetNextCharToProcess() == token)
+			if (GetNextChar()) {
+				if (sfile.GetCurrentCharToProcess() == token)
 					return TRUE;
-				if (IsWhiteSpace(this, (int)sfile.GetNextCharToProcess()))
+				if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
 					continue;
-				if (sfile.GetNextCharToProcess() == '/') {
+				if (sfile.GetCurrentCharToProcess() == '/') {
 					if (GetComment())
 						continue;
 					else {
@@ -2257,14 +2257,14 @@ namespace ns_HoLin
 					}
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetNextCharToProcess(), "expecting", token, "Line : ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetCurrentCharToProcess(), "expecting", token, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
 				return PrintOffendingLine("\n%s%zu\n%u", "Error unexpected end of file.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error line number expecting", sfile.GetNextCharToProcess(), "Line : ", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error line number expecting", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
 	}
 	/*
 	void cTextXFileParser::GetOffendingLine(std::string &before, std::string &after)
@@ -2344,8 +2344,8 @@ namespace ns_HoLin
 		if (ch == ' ' || ch == '\t' || ch == '\n')
 			return TRUE;
 		else if (ch == '\r') {
-			if (p->GetChar()) {
-				if (p->sfile.GetNextCharToProcess() == '\n')
+			if (p->GetNextChar()) {
+				if (p->sfile.GetCurrentCharToProcess() == '\n')
 					return TRUE;
 			}
 		}

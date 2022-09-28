@@ -29,7 +29,7 @@ namespace ns_HoLin
 		cFileInput& operator=(const cFileInput&) = delete;
 		explicit operator bool() const;
 		BOOL MoveBufferIndex(BOOL);
-		char GetNextCharToProcess() { return ch; } // Doesn't move the index to the buffer
+		char GetCurrentCharToProcess() { return ch; } // Doesn't move the index to the buffer
 		BOOL GetBytesFromFile(char*, std::size_t, std::size_t&);
 		void DeleteBuffer();
 		BOOL GetEndOfFileStatus() { return endoffile; }
