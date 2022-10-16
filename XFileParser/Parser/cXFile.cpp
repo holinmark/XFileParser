@@ -33,16 +33,20 @@ namespace ns_HoLin
 		Cleanup();
 		text.xfiledata.Cleanup();
 
-		std::array<std::wstring, 2> state_strings{ // Do not reposition strings
+		std::array<std::wstring, 4> state_strings{ // Do not reposition strings
 			std::wstring(L"-trackoutput"),
 			std::wstring(L"-f"),
+			std::wstring(L"-showheader"),
+			std::wstring(L"-o")
 		};
 		std::unordered_map<std::wstring, DWORD> map_options{
 			std::make_pair(state_strings[0], 0),
-			std::make_pair(state_strings[1], 1)
+			std::make_pair(state_strings[1], 1),
+			std::make_pair(state_strings[2], 2),
+			std::make_pair(state_strings[3], 3)
 		};
 		std::array<std::any, state_strings.size()> arguments_options;
-		BOOL btrack = FALSE;
+		BOOL btrack = FALSE, override_binary_error = FALSE;
 
 		for (DWORD i = 1; i < argv; ++i) {
 			if (state_strings[0] == std::wstring(argc[i])) {
@@ -50,46 +54,47 @@ namespace ns_HoLin
 			}
 			else if (state_strings[1] == std::wstring(argc[i])) {
 				if (argv <= (i + 1)) {
-#if defined(_CONSOLE)
-					std::wcout << L"Error -f option, no file name entered, exiting.\n";
-#endif
+					std::wstring s = L"Error -f option, no file name entered, exiting.";
+					
+					MessageBoxW(nullptr, s.c_str(), L"Error.", MB_OK);
 					return FALSE;
 				}
 				arguments_options[map_options[state_strings[1]]] = std::wstring((const wchar_t*)argc[++i]);
 			}
+			else if (state_strings[2] == std::wstring(argc[i])) {
+				binary.needed_struct_file.output_header_to_file = TRUE;
+			}
+			else if (state_strings[3] == std::wstring(argc[i])) {
+				override_binary_error = TRUE;
+			}
 			else {
-#if defined(_CONSOLE)
-				std::wcout << L"Quitting unknown command \'" << (const wchar_t*)argc[i] << L"\'\n";
-#endif
+				std::wstring s = L"Quitting unknown command \'";
+				
+				s += (const wchar_t*)argc[i];
+				s += L"\'";
+				MessageBoxW(nullptr, s.c_str(), L"Error.", MB_OK);
 				return FALSE;
 			}
 		}
 		if (arguments_options[map_options[state_strings[1]]].has_value()) {
-			if (!this->openfile(std::any_cast<std::wstring>(arguments_options[map_options[state_strings[1]]]).c_str()))
+			if (!this->OpenMeshFile(std::any_cast<std::wstring>(arguments_options[map_options[state_strings[1]]]).c_str()))
 				return FALSE;
 		}
 		if (!hfile) {
 			OpenFileWithMeshFileName();
 		}
 		if (hfile) {
-#if defined(_CONSOLE)
-			std::wcout << L"File opened.\n";
-#endif
 			try {
 				if (arguments_options[map_options[state_strings[0]]].has_value())
 					btrack = std::any_cast<BOOL>(arguments_options[map_options[state_strings[0]]]);
-				if (this->ParseFile(btrack)) {
-#if defined(_CONSOLE)
-					std::wcout << L"File parsed successfully.\n";
-#endif
+				if (this->ParseFile(btrack, override_binary_error)) {
+					MessageBoxW(nullptr, L"File parsed successfully.\n", L"OK", MB_OK);
 					CloseHandle(hfile);
 					hfile = nullptr;
 					return TRUE;
 				}
 				else {
-#if defined(_CONSOLE)
-					std::wcout << L"Error parsing file.\n";
-#endif
+					MessageBoxW(nullptr, L"Error parsing file.", L"Error", MB_OK);
 				}
 			}
 			catch (ns_HoLin::sErrorMessageException serror) {
@@ -113,25 +118,17 @@ namespace ns_HoLin
 		Cleanup();
 		text.xfiledata.Cleanup();
 		if (file_name) {
-			if (openfile(file_name)) {
+			if (this->OpenMeshFile(file_name)) {
 				success = this->ParseFile(FALSE);
 				CloseHandle(hfile);
 				hfile = nullptr;
 			}
 			else {
-#ifdef _WINDOWS
-				MessageBox(nullptr, L"Could not open mesh file.", L"Error", MB_OK);
-#else
-				std::wcout << L"Could not open mesh file.\n";
-#endif
+				MessageBoxW(nullptr, L"Could not open mesh file.", L"Error", MB_OK);
 			}
 		}
 		else {
-#ifdef _WINDOWS
-			MessageBox(nullptr, L"No file name entered.", L"Error", MB_OK);
-#else
-			std::wcout << L"Error no file name entered.\n";
-#endif
+			MessageBoxW(nullptr, L"No file name entered.", L"Error", MB_OK);
 		}
 		return success;
 	}
@@ -147,37 +144,31 @@ namespace ns_HoLin
 		if (fin.is_open()) {
 			fin.getline(buff, MAX_PATH);
 			if (std::wcslen(buff) > 0) {
-				std::wcout << buff << L'\n';
-				openfile(buff);
+				OpenMeshFile(buff);
 			}
 			else {
-				std::wcout << L"\nError \'file.txt\' empty.\n";
+				MessageBoxW(nullptr, L"\nError \'file.txt\' empty.\n", L"Error.", MB_OK);
 			}
 			fin.close();
 		}
 		else {
-			std::wcout << L"\nError opening \'file.txt\'.\n";
+			MessageBoxW(nullptr, L"\nError opening \'file.txt\'.", L"Error loading file.", MB_OK);
 		}
 	}
 
-	bool cXFile::openfile(const wchar_t *file_name)
+	bool cXFile::OpenMeshFile(const wchar_t *file_name)
 	{
-		hfile = CreateFile(file_name, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if (hfile != INVALID_HANDLE_VALUE)
+		this->hfile = CreateFile(file_name, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (this->hfile != INVALID_HANDLE_VALUE)
 			return true;
-#if defined(_CONSOLE)
-		std::wcout << L"Error could not locate " << file_name << L'\n';
-#endif
-#if defined(_WINDOWS)
 		std::wstring s(L"Error could not locate ");
 		s.append(file_name);
-		MessageBox(nullptr, s.c_str(), L"File error", MB_OK);
-#endif
-		hfile = nullptr;
+		MessageBoxW(nullptr, s.c_str(), L"File error.", MB_OK);
+		this->hfile = nullptr;
 		return false;
 	}
 
-	BOOL cXFile::ReadHeader()
+	BOOL cXFile::ReadHeader(BOOL boverride_binary_error)
 	{
 		struct sHeader {
 			union{
@@ -192,9 +183,18 @@ namespace ns_HoLin
 					char end;
 				};
 			};
+			bool ReadHeader(HANDLE hfile) {
+				memset(this, 0, sizeof(this));
+				DWORD bytes_to_read = (DWORD)_ARRAYSIZE(this->buffer) - sizeof(char), bytes_read = 0;
+				if (ReadFile(hfile, (LPVOID)this->buffer, bytes_to_read, &bytes_read, nullptr)) {
+					if (bytes_read == bytes_to_read)
+						return true;
+				}
+				return false;
+			}
 		};
 		sHeader headerbuffer;
-		DWORD bytesread = 0, bytes_to_read = _ARRAYSIZE(headerbuffer.buffer) * sizeof(char);
+		DWORD bytesread = 0, bytes_to_read = (_ARRAYSIZE(headerbuffer.buffer) * sizeof(char)) - sizeof(char);
 		long data = 0;
 
 		memset(&headerbuffer, 0, sizeof(headerbuffer));
@@ -205,11 +205,7 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_MAGIC:
 						break;
 					default:
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Error not an x file.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Error not an x file.\n";
-#endif
+						MessageBoxW(nullptr, L"Error not an x file.", L"Error", MB_OK);
 						return FALSE;
 					}
 				}
@@ -218,11 +214,7 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_VERSION:
 						break;
 					default:
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Error unknown version.\r\nOnly version 0303 supported.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Error unknown version.\nOnly version 0303 supported.\n";
-#endif
+						MessageBoxW(nullptr, L"Error unknown version.\r\nOnly version 0303 supported.", L"Error", MB_OK);
 						return FALSE;
 					}
 				}
@@ -233,26 +225,17 @@ namespace ns_HoLin
 						break;
 					case XOFFILE_FORMAT_BINARY:
 						file_type = BINARY_FILE;
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Binary version not supported at this time.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Binary version not supported at this time.\n";
-#endif
-						return FALSE;
+						if (!boverride_binary_error) {
+							MessageBoxW(nullptr, L"Binary version not supported.", L"Error", MB_OK);
+							return FALSE;
+						}
+						break;
 					case XOFFILE_FORMAT_COMPRESSED:
 						file_type = ZIP_FILE;
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Can't read compressed file.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Can't read compressed file.\n";
-#endif
+						MessageBoxW(nullptr, L"Can't read compressed file.", L"Error", MB_OK);
 						return FALSE;
 					default:
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Header error, unknown file format.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Header error, unknown file format.\n";
-#endif
+						MessageBoxW(nullptr, L"Header error, unknown file format.", L"Error", MB_OK);
 						return FALSE;
 					}
 				}
@@ -263,46 +246,32 @@ namespace ns_HoLin
 						break;
 					case XOFFILE_FORMAT_FLOAT_BITS_64:
 						floatsize = 64;
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"64 bit float not supported at this time.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"64 bit float not supported at this time.\n";
-#endif
+						MessageBoxW(nullptr, L"64 bit float not supported at this time.", L"Error", MB_OK);
 						return FALSE;
 					default:
-#if defined(_WINDOWS)
-						MessageBox(nullptr, L"Unknown float size.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-						std::wcout << L"Unknown float size.\n";
-#endif
+						MessageBoxW(nullptr, L"Unknown float size.", L"Error", MB_OK);
 						return FALSE;
 					}
 				}
 			}
 			else {
-#if defined(_WINDOWS)
-				MessageBox(nullptr, L"Unable to read X file header.", L"Error", MB_OK);
-#elif defined(_CONSOLE)
-				std::wcout << L"Unable to read X file header.\n";
-#endif
+				MessageBoxW(nullptr, L"Unable to read X file header.", L"Error", MB_OK);
 				return FALSE;
 			}
 		}
 		return TRUE;
 	}
 
-	BOOL cXFile::ParseFile(BOOL btrack)
+	BOOL cXFile::ParseFile(BOOL btrack, BOOL boverride_binary_error)
 	{
-		if (ReadHeader()) {
+		if (ReadHeader(boverride_binary_error)) {
 			if (file_type == TEXT_FILE) {
 				return text.ParseFile(&hfile, btrack);
 			}
 			else if (file_type == BINARY_FILE) {
-#ifdef _WINDOWS
-				MessageBox(nullptr, L"Binary x file unsupported.", L"Error", MB_OK);
-#else
-				std::wcout << "Binary xfile unsupported.\n";
-#endif
+				if (boverride_binary_error) {
+					return binary.ParseFile(&hfile);
+				}
 			}
 		}
 		return FALSE;

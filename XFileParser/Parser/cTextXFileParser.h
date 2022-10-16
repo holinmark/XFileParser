@@ -65,6 +65,7 @@ namespace ns_HoLin
 		bool operator !() const;
 		cTextXFileParser& operator=(cTextXFileParser&&) = delete;
 		cTextXFileParser& operator=(const cTextXFileParser&) = delete;
+		
 	private:
 		std::size_t linenumber;
 		ns_HoLin::sFunctionCallHistory functioncalls;
@@ -99,8 +100,23 @@ namespace ns_HoLin
 		BOOL GetPolygon(char*, std::size_t, void*);
 		BOOL GetPolygons(char*, std::size_t, void*);
 		BOOL GetFaces(char*, std::size_t, ns_HoLin::sMeshFaces&);
-		BOOL GetArray(char*, std::size_t, void*, DWORD, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*), BOOL = TRUE);
-		BOOL Get2DArray(char*, std::size_t, void*, DWORD, DWORD, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*, DWORD, DWORD));
+
+		BOOL GetArray(
+			char*,
+			std::size_t,
+			void*,
+			DWORD,
+			BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*),
+			BOOL = TRUE);
+
+		BOOL Get2DArray(
+			char*,
+			std::size_t,
+			void*,
+			DWORD,
+			DWORD,
+			BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*, DWORD, DWORD));
+			
 		BOOL GetVertices(char*, std::size_t, std::vector<DirectX::XMFLOAT3>&, DWORD);
 		BOOL GetNormalFaceIndices(char*, std::size_t, void*);
 		BOOL GetMeshNormalsBody(char*, std::size_t, ns_HoLin::sMeshNormals*);

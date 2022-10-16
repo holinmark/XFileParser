@@ -114,8 +114,10 @@ namespace ns_HoLin
 				linenumber++;
 			}
 			if (trackoutput) {
-#ifdef _CONSOLE
+#ifdef _DEBUG
+	#ifdef _CONSOLE
 				std::clog << sfile.GetCurrentCharToProcess();
+	#endif
 #endif
 			}
 			return TRUE;

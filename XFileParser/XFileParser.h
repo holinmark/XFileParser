@@ -1,4 +1,7 @@
 #pragma once
+/*
+msbuild /m /p:Configuration=Debug XFileParser.sln
+*/
 
 #include <Windows.h>
 #include <DirectXMath.h>

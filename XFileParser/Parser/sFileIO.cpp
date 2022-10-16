@@ -63,17 +63,33 @@ namespace ns_HoLin
 		return TRUE;
 	}
 
-	BOOL cFileInput::GetBytesFromFile(char *buffer, std::size_t blen, std::size_t &bytes_to_read)
+	void cFileInput::GetBytesFromFile(BYTE *buffer, DWORD bytes_to_read, INT_PTR line, const char *file_name)
 	{
-		if (!ReadFile(*hfile, (LPVOID)buffer, (DWORD)bytes_to_read, (LPDWORD)&bytes_read_from_file, nullptr)) {
+#ifdef _DEBUG
+		ns_HoLin::sFunctionCallHistory f(__func__);
+#endif
+		if (!ReadFile(*hfile, (LPVOID)buffer, bytes_to_read, &bytes_read_from_file, nullptr)) {
+			ns_HoLin::sErrorMessageException *p = new ns_HoLin::sErrorMessageException();
+			
+#ifdef _DEBUG
+			f.PrintHistoryLog();
+#endif
+			p->error_messages += std::string("Error, reading from source file.\n") + std::to_string(line);
+			p->error_messages.append(1, L'\n');
+			p->error_messages += std::string(file_name) + std::string("\n\n");
 			hfile = nullptr;
-			return FALSE;
+			throw(p);
 		}
 		if (bytes_read_from_file == 0) {
-			hfile = nullptr;
-			return FALSE;
+			throw(std::string("Unexpected end of file.\n") + std::to_string(line) + std::string("\n\n"));
 		}
-		return TRUE;
+		if (bytes_read_from_file != bytes_to_read) {
+			hfile = nullptr;
+#ifdef _DEBUG
+			f.PrintHistoryLog();
+#endif
+			throw(std::string("Error, unable to read necessary bytes.\n"));
+		}
 	}
 
 	void cFileInput::GetOffendingLine(std::string &before, std::string &after)

@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <string>
 #include <exception>
+#include "sFunctionCallHistory.h"
 
 namespace ns_HoLin
 {
@@ -16,8 +17,11 @@ namespace ns_HoLin
 		std::string error_messages;
 		
 		sErrorMessageException();
+		sErrorMessageException(const char*, unsigned int);
+		sErrorMessageException(const char*, unsigned int, ns_HoLin::sFunctionCallHistory*);
 		~sErrorMessageException();
 		void DisplayError(ns_HoLin::sFunctionCallHistory&);
+		const char* what() { return error_messages.c_str(); }
 	};
 }
 

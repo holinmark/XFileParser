@@ -5,6 +5,9 @@
 
 #include <Windows.h>
 #include <string>
+#include <any>
+#include "sErrorMessageException.h"
+#include "sFunctionCallHistory.h"
 
 namespace ns_HoLin
 {
@@ -30,7 +33,7 @@ namespace ns_HoLin
 		explicit operator bool() const;
 		BOOL MoveBufferIndex(BOOL);
 		char GetCurrentCharToProcess() { return ch; } // Doesn't move the index to the buffer
-		BOOL GetBytesFromFile(char*, std::size_t, std::size_t&);
+		void GetBytesFromFile(BYTE*, DWORD, INT_PTR = 0, const char* = nullptr);
 		void DeleteBuffer();
 		BOOL GetEndOfFileStatus() { return endoffile; }
 		void SetEndOfFileStatus(BOOL b) { endoffile = b; }

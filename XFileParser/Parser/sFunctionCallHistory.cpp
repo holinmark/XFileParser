@@ -18,10 +18,12 @@ namespace ns_HoLin
 
 	BOOL sFunctionCallHistory::PrintHistoryLog(BOOL ret)
 	{
-		std::clog << "\nFunction history log\n";
-		for (auto it : sFunctionCallHistory::history)
-			std::clog << it << "()\n";
-		sFunctionCallHistory::history.clear();
+		if (sFunctionCallHistory::history.size() > 0) {
+			std::wcout << "History log.\n";
+			for (auto it : sFunctionCallHistory::history)
+				std::clog << it << "()\n";
+			sFunctionCallHistory::history.clear();
+		}
 		return ret;
 	}
 }

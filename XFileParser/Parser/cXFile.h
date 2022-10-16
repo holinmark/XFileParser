@@ -24,6 +24,7 @@
 #include <utility>
 #include <any>
 #include "cTextXFileParser.h"
+#include "cBinaryXFileParser.h"
 
 namespace ns_HoLin
 {
@@ -33,6 +34,8 @@ namespace ns_HoLin
 		DWORD floatsize;
 		HANDLE hfile;
 		ns_HoLin::cTextXFileParser text;
+		ns_HoLin::cBinaryXFileParser binary;
+		
 	public:
 		cXFile();
 		cXFile(cXFile&&) = delete;
@@ -45,12 +48,14 @@ namespace ns_HoLin
 		BOOL ReadCommandLineArgumentsThenParse(DWORD, const wchar_t**);
 		BOOL ReadXFile(const wchar_t*);
 		DWORD GetXFileType() { return file_type; }
-		ns_HoLin::cTextXFileParser* GetTextData() { return (ns_HoLin::cTextXFileParser*)&this->text; }
+		ns_HoLin::cTextXFileParser* GetTextData() { return &this->text; }
+		ns_HoLin::cBinaryXFileParser* GetBinaryData() { return &this->binary; }
+		
 	protected:
 		void OpenFileWithMeshFileName();
-		bool openfile(const wchar_t*);
-		BOOL ReadHeader();
-		BOOL ParseFile(BOOL);
+		bool OpenMeshFile(const wchar_t*);
+		BOOL ReadHeader(BOOL);
+		BOOL ParseFile(BOOL, BOOL = FALSE);
 	};
 }
 

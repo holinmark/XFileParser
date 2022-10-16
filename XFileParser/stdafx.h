@@ -10,15 +10,12 @@
 #include <stdlib.h>
 #include <tchar.h>
 
-#ifdef _CONSOLE
-#include <process.h>
-#endif
-
 #include <cctype>
 #include <cwchar>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <array>
 #include <any>
 #include <vector>
@@ -29,6 +26,8 @@
 #include <cstdarg>
 #include <unordered_map>
 #include <tuple>
+#include <memory>
+#include <stdexcept>
 
 #include "cBinaryXFileParser.h"
 #include "cTextXFileParser.h"
