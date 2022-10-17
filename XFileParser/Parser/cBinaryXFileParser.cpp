@@ -132,10 +132,16 @@ namespace ns_HoLin
 			if (!this->Name(token)) {
 				return FALSE;
 			}
+			if (needed_struct_file) {
+				needed_struct_file.c_header_file.push_back(' ');
+			}
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			if (token == TOKEN_NAME) {
 				if (!this->Name(token)) {
 					return FALSE;
+				}
+				if (needed_struct_file) {
+					needed_struct_file.c_header_file.push_back(' ');
 				}
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			}
@@ -477,6 +483,9 @@ namespace ns_HoLin
 		if (!this->PrimitiveArrayType(token)) {
 			return FALSE;
 		}
+		if (needed_struct_file) {
+			needed_struct_file.c_header_file.push_back(' ');
+		}
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token != TOKEN_NAME) {
 			std::wcout << __LINE__ << " error, expecting token name. " << token << '\n';
@@ -507,6 +516,9 @@ namespace ns_HoLin
 				needed_struct_file.c_header_file.push_back(' ');
 			}
 			if (this->TemplateReferenceName(token)) {
+				if (needed_struct_file) {
+					needed_struct_file.c_header_file.push_back(' ');
+				}
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 				if (token == TOKEN_SEMICOLON) {
 					if (needed_struct_file) {
@@ -528,11 +540,16 @@ namespace ns_HoLin
 
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token == TOKEN_NAME) {
-			return this->Name(token);
+			BOOL b = this->Name(token);
+			
+			if (needed_struct_file) {
+				needed_struct_file.c_header_file.push_back(' ');
+			}
+			return b;
 		}
 		else if (token == TOKEN_SEMICOLON) {
 			if (needed_struct_file) {
-				needed_struct_file.c_header_file.push_back('[');
+				needed_struct_file.c_header_file.push_back(';');
 			}
 			return TRUE;
 		}

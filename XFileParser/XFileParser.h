@@ -1,6 +1,6 @@
 #pragma once
 /*
-msbuild /m /p:Configuration=Debug XFileParser.sln
+msbuild /m:4 /p:Configuration=Debug XFileParser.sln
 */
 
 #include <Windows.h>
