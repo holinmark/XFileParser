@@ -74,7 +74,7 @@ namespace ns_HoLin
 		
 	protected:
 		BOOL XFileTemplate(unsigned short&);
-		std::any XFileObject(unsigned short&);
+		BOOL XFileObject(unsigned short&);
 		BOOL DataPartsList(unsigned short&);
 		BOOL DataPart(unsigned short&);
 		BOOL FollowingDataPart(unsigned short&);
@@ -85,7 +85,6 @@ namespace ns_HoLin
 		BOOL DataReference(unsigned short&);
 		BOOL TemplateMembersPart(unsigned short&);
 		std::any FollowingTemplateMembersPart(unsigned short&);
-		std::any TemplateOptionInfo(unsigned short&);
 		BOOL FollowingTemplateMembersList(unsigned short&);
 		BOOL TemplateMembersList(unsigned short&);
 		BOOL TemplateMembers(unsigned short&);
@@ -101,7 +100,8 @@ namespace ns_HoLin
 		BOOL FollowingDimensionList(unsigned short&);
 		BOOL DimensionList(unsigned short&);
 		std::any TemplateOptionList(unsigned short&);
-		std::any Ellipsis(unsigned short&);
+		BOOL TemplateOptionInfo(unsigned short&);
+		BOOL Ellipsis(unsigned short&);
 		BOOL Name(unsigned short&);
 		void ClassID(unsigned short&);
 		std::any OptionalClassID(unsigned short&);
