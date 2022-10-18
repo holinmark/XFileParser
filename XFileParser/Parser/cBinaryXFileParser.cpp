@@ -876,6 +876,7 @@ namespace ns_HoLin
 		sfile.GetBytesFromFile((BYTE*)&data2, sizeof(data2), __LINE__, __FILE__);
 		sfile.GetBytesFromFile((BYTE*)&data3, sizeof(data3), __LINE__, __FILE__);
 		sfile.GetBytesFromFile((BYTE*)data4, static_cast<DWORD>(_ARRAYSIZE(data4) * sizeof(BYTE)), __LINE__, __FILE__);
+		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 	}
 
 	std::any cBinaryXFileParser::OptionalClassID(unsigned short &token)
