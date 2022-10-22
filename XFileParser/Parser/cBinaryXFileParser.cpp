@@ -37,14 +37,15 @@ namespace ns_HoLin
 						}
 					}
 					else {
-						std::wcout << "\nXFileObject.\n";
 						if (!this->XFileObject(token)) {
 							return FALSE;
 						}
-						if (token != TOKEN_CBRACE) {
-							std::wcout << __LINE__ << ' ' << " error expecting token closing brace.\n";
-							return FALSE;
-						}
+					}
+					if (token != TOKEN_CBRACE) {
+						throw(std::to_string(__LINE__) + std::string(" error expecting closing brace.\n"));
+					}
+					if (needed_struct_file) {
+						needed_struct_file.c_header_file.append("}\n\n");
 					}
 				} while (TRUE);
 			}
@@ -72,7 +73,11 @@ namespace ns_HoLin
 					delete p_error_message;
 					p_error_message = nullptr;
 				}
-				return f.PrintHistoryLog(FALSE);
+				return FALSE;
+			}
+			catch (std::exception &e) {
+				std::cout << e.what() << '\n';
+				return FALSE;
 			}
 			std::cout << needed_struct_file.c_header_file << '\n';
 			needed_struct_file.c_header_file.clear();
@@ -105,18 +110,11 @@ namespace ns_HoLin
 		ret = this->OptionalClassID(token);
 		if (ret.has_value()) {
 			if (!std::any_cast<BOOL>(ret)) {
-				f.PrintHistoryLog();
 				return FALSE;
 			}
 		}
 		if (!this->TemplateMembersPart(token)) {
-			return f.PrintHistoryLog(FALSE);
-		}
-		if (token != TOKEN_CBRACE) {
-			throw(std::to_string(__LINE__) + std::string(" error expecting closing brace.\n"));
-		}
-		if (needed_struct_file) {
-			needed_struct_file.c_header_file.append("}\n\n");
+			return FALSE;
 		}
 		return TRUE;
 	}
@@ -149,6 +147,8 @@ namespace ns_HoLin
 		else if (this->PrimitiveType(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			if (token != TOKEN_NAME) {
+				f.PrintHistoryLog();
+				std::cout << needed_struct_file.c_header_file << '\n';
 				std::wcout << __LINE__ << " error expecting token name read " << token << '\n';
 				return FALSE;
 			}
@@ -158,7 +158,6 @@ namespace ns_HoLin
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		}
 		else { // needed do not remove
-			std::wcout << __LINE__ << " error unexpected token " << token << '\n';
 			return FALSE;
 		}
 		if (token == TOKEN_OBRACE) {
@@ -172,7 +171,13 @@ namespace ns_HoLin
 				}
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			}
-			return this->DataPartsList(token);
+			ret = this->DataPartsList(token);
+			if (ret.has_value()) {
+				return std::any_cast<BOOL>(ret);
+			}
+			else {
+				return TRUE;
+			}
 		}
 		else {
 			std::wcout << __LINE__ << ' ' << " unexpected token " << token << " expecting token brace.\n";
@@ -180,11 +185,13 @@ namespace ns_HoLin
 		return FALSE;
 	}
 	
-	BOOL cBinaryXFileParser::DataPartsList(unsigned short &token)
+	std::any cBinaryXFileParser::DataPartsList(unsigned short &token)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
+		std::any ret;
+		
 		if (this->DataPart(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			if (token == TOKEN_CBRACE) {
@@ -193,7 +200,13 @@ namespace ns_HoLin
 				}
 				return TRUE;
 			}
-			return this->FollowingDataPart(token);
+			ret = this->FollowingDataPart(token);
+			if (ret.has_value()) {
+				return std::any_cast<BOOL>(ret);
+			}
+			else {
+				return {};
+			}
 		}
 		return FALSE;
 	}
@@ -228,18 +241,22 @@ namespace ns_HoLin
 		return FALSE;
 	}
 	
-	BOOL cBinaryXFileParser::FollowingDataPart(unsigned short &token)
+	std::any cBinaryXFileParser::FollowingDataPart(unsigned short &token)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
-		std::any ret;
-		
 		if (this->DataPart(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
-			this->FollowingDataPart(token);
+			auto ret = this->FollowingDataPart(token);
+			if (ret.has_value()) {
+				return std::any_cast<BOOL>(ret);
+			}
+			else {
+				return {};
+			}
 		}
-		return TRUE;
+		return {};
 	}
 	
 	BOOL cBinaryXFileParser::NumberList(unsigned short &token)
@@ -259,11 +276,11 @@ namespace ns_HoLin
 			size = count * sizeof(int);
 			sfile.GetBytesFromFile((BYTE*)integer_list.get(), size, __LINE__, __FILE__);
 			for (DWORD i = 0; i < count; i++) {
-				if (needed_struct_file) {
+				/* if (needed_struct_file) {
 					needed_struct_file.c_header_file.push_back(' ');
 					needed_struct_file.c_header_file.append(std::to_string(integer_list[i]));
 					needed_struct_file.c_header_file.push_back(' ');
-				}
+				} */
 			}
 			return TRUE;
 		}
@@ -287,11 +304,11 @@ namespace ns_HoLin
 			size = count * sizeof(float);
 			sfile.GetBytesFromFile((BYTE*)float_list.get(), size, __LINE__, __FILE__);
 			for (DWORD i = 0; i < count; i++) {
-				if (needed_struct_file) {
+				/* if (needed_struct_file) {
 					needed_struct_file.c_header_file.push_back(' ');
 					needed_struct_file.c_header_file.append(std::to_string(float_list[i]));
 					needed_struct_file.c_header_file.push_back(' ');
-				}
+				} */
 			}
 			return TRUE;
 		}
@@ -378,7 +395,12 @@ namespace ns_HoLin
 		else {
 			if (this->TemplateMembersList(token)) {
 				ret = this->FollowingTemplateMembersPart(token);
-				return TRUE;
+				if (ret.has_value()) {
+					return std::any_cast<BOOL>(ret);
+				}
+				else {
+					return TRUE;
+				}
 			}
 		}
 		f.PrintHistoryLog();
@@ -390,25 +412,28 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
-		if (token == TOKEN_CBRACE) {
-			return TRUE;
-		}
 		if (token == TOKEN_OBRACKET) {
 			return this->TemplateOptionInfo(token);
 		}
 		return {};
 	}
 	
-	BOOL cBinaryXFileParser::FollowingTemplateMembersList(unsigned short &token)
+	std::any cBinaryXFileParser::FollowingTemplateMembersList(unsigned short &token)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
 		if (this->TemplateMembers(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
-			return this->FollowingTemplateMembersList(token);
+			auto ret = this->FollowingTemplateMembersList(token);
+			if (ret.has_value()) {
+				return std::any_cast<BOOL>(ret);
+			}
+			else {
+				return {};
+			}
 		}
-		return TRUE;
+		return {};
 	}
 	
 	BOOL cBinaryXFileParser::TemplateMembersList(unsigned short &token)
@@ -418,7 +443,13 @@ namespace ns_HoLin
 #endif
 		if (this->TemplateMembers(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
-			return this->FollowingTemplateMembersList(token);
+			auto ret = this->FollowingTemplateMembersList(token);
+			if (ret.has_value()) {
+				return std::any_cast<BOOL>(ret);
+			}
+			else {
+				return TRUE;
+			}
 		}
 		return FALSE;
 	}
@@ -516,9 +547,6 @@ namespace ns_HoLin
 				needed_struct_file.c_header_file.push_back(' ');
 			}
 			if (this->TemplateReferenceName(token)) {
-				if (needed_struct_file) {
-					needed_struct_file.c_header_file.push_back(' ');
-				}
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 				if (token == TOKEN_SEMICOLON) {
 					if (needed_struct_file) {
@@ -540,12 +568,7 @@ namespace ns_HoLin
 
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token == TOKEN_NAME) {
-			BOOL b = this->Name(token);
-			
-			if (needed_struct_file) {
-				needed_struct_file.c_header_file.push_back(' ');
-			}
-			return b;
+			return this->Name(token);
 		}
 		else if (token == TOKEN_SEMICOLON) {
 			if (needed_struct_file) {
@@ -665,7 +688,7 @@ namespace ns_HoLin
 		return FALSE;
 	}
 	
-	BOOL cBinaryXFileParser::Integer(unsigned short &token)
+	void cBinaryXFileParser::Integer(unsigned short &token)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory f(__func__);
@@ -676,7 +699,6 @@ namespace ns_HoLin
 		if (needed_struct_file) {
 			needed_struct_file.c_header_file.append(std::to_string(value));
 		}
-		return TRUE;
 	}
 	
 	BOOL cBinaryXFileParser::DimensionSize(unsigned short &token)
@@ -687,16 +709,14 @@ namespace ns_HoLin
 
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token == TOKEN_INTEGER) {
-			if (this->Integer(token)) {
-				return TRUE;
-			}
+			this->Integer(token);
+			return TRUE;
 		}
 		else if (token == TOKEN_NAME) {
 			return this->Name(token);
 		}
 		std::wcout << __LINE__ << " error, unexpected token. " << token << '\n';
-		f.PrintHistoryLog();
-		return FALSE;
+		return f.PrintHistoryLog(FALSE);
 	}
 	
 	BOOL cBinaryXFileParser::Dimension(unsigned short &token)
@@ -712,15 +732,19 @@ namespace ns_HoLin
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 				if (token != TOKEN_CBRACKET) {
 					std::wcout << __LINE__ << " error expecting closing bracket " << token << '\n';
-					return FALSE;
+					return f.PrintHistoryLog(FALSE);
 				}
 				if (needed_struct_file) {
 					needed_struct_file.c_header_file.push_back(']');
 				}
 				return TRUE;
 			}
+			else {
+				throw(L"Error DimensionSize returns FALSE.\n");
+			}
 		}
-		return FALSE;
+		// open bracket not read but maybe a semi colon has been read but not checked here.
+		return FALSE; // false positive, meaning 1 dimensional array already declared, second dimensional not declared.
 	}
 	
 	BOOL cBinaryXFileParser::FollowingDimensionList(unsigned short &token)
@@ -751,9 +775,13 @@ namespace ns_HoLin
 				}
 				return TRUE;
 			}
+			else {
+				std::wcout << __LINE__ << '\n';
+				return f.PrintHistoryLog(FALSE);
+			}
 		}
-		f.PrintHistoryLog();
-		return FALSE;
+		std::wcout << __LINE__ << '\n';
+		return f.PrintHistoryLog(FALSE);
 	}
 	
 	std::any cBinaryXFileParser::TemplateOptionList(unsigned short &token)
@@ -855,7 +883,8 @@ namespace ns_HoLin
 					buffer[i] = '\0';
 				}
 				else {
-					throw(std::string("Error, string must start with alpha character.\n"));
+					std::cout << "\nError received character " << ch << '\n';
+					throw(std::string("Error, string must start with alpha character.\n") + std::to_string(ch));
 				}
 			}
 		}

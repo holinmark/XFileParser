@@ -75,9 +75,9 @@ namespace ns_HoLin
 	protected:
 		BOOL XFileTemplate(unsigned short&);
 		BOOL XFileObject(unsigned short&);
-		BOOL DataPartsList(unsigned short&);
+		std::any DataPartsList(unsigned short&);
 		BOOL DataPart(unsigned short&);
-		BOOL FollowingDataPart(unsigned short&);
+		std::any FollowingDataPart(unsigned short&);
 		BOOL NumberList(unsigned short&);
 		BOOL FloatList(unsigned short&);
 		BOOL StringList(unsigned short&);
@@ -85,7 +85,7 @@ namespace ns_HoLin
 		BOOL DataReference(unsigned short&);
 		BOOL TemplateMembersPart(unsigned short&);
 		std::any FollowingTemplateMembersPart(unsigned short&);
-		BOOL FollowingTemplateMembersList(unsigned short&);
+		std::any FollowingTemplateMembersList(unsigned short&);
 		BOOL TemplateMembersList(unsigned short&);
 		BOOL TemplateMembers(unsigned short&);
 		BOOL Array(unsigned short&);
@@ -94,7 +94,7 @@ namespace ns_HoLin
 		BOOL FollowingPrimitiveType(unsigned short&);
 		BOOL PrimitiveType(unsigned short&);
 		BOOL PrimitiveArrayType(unsigned short&);
-		BOOL Integer(unsigned short&);
+		void Integer(unsigned short&);
 		BOOL DimensionSize(unsigned short&);
 		BOOL Dimension(unsigned short&);
 		BOOL FollowingDimensionList(unsigned short&);

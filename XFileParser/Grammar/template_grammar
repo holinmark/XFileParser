@@ -1,0 +1,77 @@
+template              : TOKEN_TEMPLATE TOKEN_NAME
+						TOKEN_OBRACE
+							TOKEN_GUID template_members_part
+						TOKEN_CBRACE
+
+template_members_part : TOKEN_OBRACKET
+							template_option_info
+                        TOKEN_CBRACKET
+                      | template_members_list following_template_members_part
+
+following_template_members_part : / * Empty */ | TOKEN_OBRACKET template_option_info TOKEN_CBRACKET
+
+template_option_info  : ellipsis | template_option_list
+
+template_members      : primitive_type following_primitive_type | array | template_reference
+
+following_template_members_list : /* Empty */ | template_members following_template_members_list
+
+template_members_list : template_members following_template_members_list
+
+array                 : TOKEN_ARRAY array_data_type TOKEN_NAME dimension_list TOKEN_SEMICOLON
+
+template_reference    : TOKEN_NAME template_reference_name
+
+template_reference_name : TOKEN_NAME | TOKEN_SEMICOLON
+
+following_primitive_type : TOKEN_NAME | TOKEN_SEMICOLON
+
+primitive_type        : TOKEN_WORD
+                      | TOKEN_DWORD
+                      | TOKEN_FLOAT
+                      | TOKEN_DOUBLE
+                      | TOKEN_CHAR
+                      | TOKEN_UCHAR
+                      | TOKEN_SWORD
+                      | TOKEN_SDWORD
+                      | TOKEN_LPSTR
+                      | TOKEN_UNICODE
+                      | TOKEN_CSTRING
+
+primitive_array_type  : TOKEN_WORD
+                      | TOKEN_DWORD
+                      | TOKEN_FLOAT
+                      | TOKEN_DOUBLE
+                      | TOKEN_CHAR
+                      | TOKEN_UCHAR
+                      | TOKEN_SWORD
+                      | TOKEN_SDWORD
+                      | TOKEN_LPSTR
+                      | TOKEN_UNICODE
+                      | TOKEN_CSTRING
+					  | TOKEN_NAME
+
+array_data_type       : primitive_array_type
+
+dimension_size        : TOKEN_INTEGER | TOKEN_NAME
+
+dimension             : TOKEN_OBRACKET dimension_size TOKEN_CBRACKET
+
+following_dimension_list : /* Empty */ | dimension following_dimension_list
+
+dimension_list        : dimension following_dimension_list
+
+template_option_part  : TOKEN_NAME optional_class_id
+
+template_option_list  : /* Empty */ | template_option_part template_option_list
+
+name                  : TOKEN_NAME
+
+optional_name         : /* Empty */ | TOKEN_NAME
+
+class_id              : TOKEN_GUID
+
+optional_class_id     : /* Empty */ | class_id
+
+ellipsis              : TOKEN_DOT TOKEN_DOT TOKEN_DOT
+

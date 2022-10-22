@@ -1,0 +1,33 @@
+object                : identifier optional_name TOKEN_OBRACE
+                            optional_class_id
+                            data_parts_list
+                            TOKEN_CBRACE
+
+following_data_parts  : /* Empty */ | data_part following_data_parts
+
+data_parts_list       : data_part following_data_parts
+
+data_part             : data_reference
+                      | object
+                      | number_list
+                      | float_list
+                      | string_list
+
+number_list           : TOKEN_INTEGER_LIST
+
+float_list            : TOKEN_FLOAT_LIST
+
+string_list           : string_list_1 list_separator
+
+string_list_1         : string
+                      | string_list_1 list_separator string
+
+list_separator        : comma
+                      | semicolon
+
+string                : TOKEN_STRING
+
+identifier            : name
+                      | primitive_type
+
+data_reference        : TOKEN_OBRACE name optional_class_id TOKEN_CBRACE
