@@ -50,12 +50,16 @@ namespace ns_HoLin
 				} while (TRUE);
 			}
 			catch (const std::string &error_string) {
+#ifdef FUNCTIONCALLSTACK
 				f.PrintHistoryLog();
+#endif
 				std::wcout << error_string.c_str() << '\n';
 				return FALSE;
 			}
 			catch (const wchar_t *p_error_string) {
+#ifdef FUNCTIONCALLSTACK
 				f.PrintHistoryLog();
+#endif
 				std::wcout << p_error_string << '\n';
 				return FALSE;
 			}
@@ -147,7 +151,9 @@ namespace ns_HoLin
 		else if (this->PrimitiveType(token)) {
 			sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 			if (token != TOKEN_NAME) {
+#ifdef FUNCTIONCALLSTACK
 				f.PrintHistoryLog();
+#endif
 				std::cout << needed_struct_file.c_header_file << '\n';
 				std::wcout << __LINE__ << " error expecting token name read " << token << '\n';
 				return FALSE;
@@ -275,13 +281,6 @@ namespace ns_HoLin
 			}
 			size = count * sizeof(int);
 			sfile.GetBytesFromFile((BYTE*)integer_list.get(), size, __LINE__, __FILE__);
-			for (DWORD i = 0; i < count; i++) {
-				/* if (needed_struct_file) {
-					needed_struct_file.c_header_file.push_back(' ');
-					needed_struct_file.c_header_file.append(std::to_string(integer_list[i]));
-					needed_struct_file.c_header_file.push_back(' ');
-				} */
-			}
 			return TRUE;
 		}
 		return FALSE;
@@ -303,13 +302,6 @@ namespace ns_HoLin
 			}
 			size = count * sizeof(float);
 			sfile.GetBytesFromFile((BYTE*)float_list.get(), size, __LINE__, __FILE__);
-			for (DWORD i = 0; i < count; i++) {
-				/* if (needed_struct_file) {
-					needed_struct_file.c_header_file.push_back(' ');
-					needed_struct_file.c_header_file.append(std::to_string(float_list[i]));
-					needed_struct_file.c_header_file.push_back(' ');
-				} */
-			}
 			return TRUE;
 		}
 		return FALSE;
@@ -337,7 +329,9 @@ namespace ns_HoLin
 		else if (token == TOKEN_SEMICOLON) {
 			return 2;
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return 0;
 	}
 	
@@ -403,7 +397,9 @@ namespace ns_HoLin
 				}
 			}
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return FALSE;
 	}
 	
@@ -472,11 +468,17 @@ namespace ns_HoLin
 					return TRUE;
 				}
 				else {
-					return f.PrintHistoryLog(FALSE);
+#ifdef FUNCTIONCALLSTACK
+					f.PrintHistoryLog();
+#endif
+					return FALSE;
 				}
 			}
 			else {
-				return f.PrintHistoryLog(FALSE);
+#ifdef FUNCTIONCALLSTACK
+				f.PrintHistoryLog();
+#endif
+				return FALSE;
 			}
 		}
 		working_with_current_token = token;
@@ -486,7 +488,10 @@ namespace ns_HoLin
 				return TRUE;
 			}
 			else {
-				return f.PrintHistoryLog(FALSE);
+#ifdef FUNCTIONCALLSTACK
+				f.PrintHistoryLog();
+#endif
+				return FALSE;
 			}
 		}
 		working_with_current_token = token;
@@ -533,7 +538,9 @@ namespace ns_HoLin
 		if (token == TOKEN_SEMICOLON) {
 			return TRUE;
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return FALSE;
 	}
 	
@@ -556,7 +563,9 @@ namespace ns_HoLin
 				}
 			}
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return FALSE;
 	}
 	
@@ -576,7 +585,9 @@ namespace ns_HoLin
 			}
 			return TRUE;
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return FALSE;
 	}
 	
@@ -599,7 +610,10 @@ namespace ns_HoLin
 		}
 		else {
 		}
-		return f.PrintHistoryLog();
+#ifdef FUNCTIONCALLSTACK
+		f.PrintHistoryLog();
+#endif
+		return FALSE;
 	}
 	
 	BOOL cBinaryXFileParser::PrimitiveType(unsigned short &token)
@@ -716,7 +730,10 @@ namespace ns_HoLin
 			return this->Name(token);
 		}
 		std::wcout << __LINE__ << " error, unexpected token. " << token << '\n';
-		return f.PrintHistoryLog(FALSE);
+#ifdef FUNCTIONCALLSTACK
+		f.PrintHistoryLog();
+#endif
+		return FALSE;
 	}
 	
 	BOOL cBinaryXFileParser::Dimension(unsigned short &token)
@@ -781,7 +798,10 @@ namespace ns_HoLin
 			}
 		}
 		std::wcout << __LINE__ << '\n';
-		return f.PrintHistoryLog(FALSE);
+#ifdef FUNCTIONCALLSTACK
+		f.PrintHistoryLog();
+#endif
+		return FALSE;
 	}
 	
 	std::any cBinaryXFileParser::TemplateOptionList(unsigned short &token)
@@ -888,7 +908,9 @@ namespace ns_HoLin
 				}
 			}
 		}
+#ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
+#endif
 		return FALSE;
 	}
 	
