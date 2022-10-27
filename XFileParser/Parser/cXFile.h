@@ -11,10 +11,6 @@
 #define XOFFILE_FORMAT_FLOAT_BITS_32	((long)'0' + ((long)'0' << 8) + ((long)'3' << 16) + ((long)'2' << 24))
 #define XOFFILE_FORMAT_FLOAT_BITS_64 	((long)'0' + ((long)'0' << 8) + ((long)'6' << 16) + ((long)'4' << 24))
 
-#define TEXT_FILE		10000
-#define BINARY_FILE		10001
-#define ZIP_FILE		10002
-
 #include <Windows.h>
 #include <iostream>
 #include <fstream>
@@ -28,6 +24,14 @@
 
 namespace ns_HoLin
 {
+	enum
+	{
+		UNKNOWN,
+		TEXT_FILE,
+		BINARY_FILE,
+		ZIP_FILE
+	};
+	
 	class cXFile
 	{
 		DWORD file_type;
@@ -45,14 +49,12 @@ namespace ns_HoLin
 		cXFile& operator=(const cXFile&) = delete;
 		void Cleanup();
 		operator bool() { return (hfile) ? true : false; }
-		BOOL ReadCommandLineArgumentsThenParse(DWORD, const wchar_t**);
-		BOOL ReadXFile(const wchar_t*);
+		BOOL ReadXFile(const wchar_t*, BOOL = FALSE, BOOL = FALSE);
 		DWORD GetXFileType() { return file_type; }
 		ns_HoLin::cTextXFileParser* GetTextData() { return &this->text; }
 		ns_HoLin::cBinaryXFileParser* GetBinaryData() { return &this->binary; }
 		
 	protected:
-		void OpenFileWithMeshFileName();
 		bool OpenMeshFile(const wchar_t*);
 		BOOL ReadHeader(BOOL);
 		BOOL ParseFile(BOOL, BOOL = FALSE);

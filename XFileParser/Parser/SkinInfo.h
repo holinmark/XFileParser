@@ -3,6 +3,11 @@
 #ifndef SKININFO_H
 #define SKININFO_H
 
+#include <Windows.h>
+#include <string>
+#include <vector>
+#include <DirectXMath.h>
+
 namespace ns_HoLin
 {
 	struct sSkinHeader

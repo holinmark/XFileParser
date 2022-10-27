@@ -20,6 +20,7 @@ namespace ns_HoLin
 		if (*hfile) {
 			try {
 				sfile.SetFileHandle(hfile);
+				ns_HoLin::WriteToConsole(L"%s\r\n", L"Binary reading.");
 				do {
 					try {
 						sfile.GetBytesFromFile((BYTE*)&token , sizeof(token), __LINE__, __FILE__);
@@ -48,44 +49,40 @@ namespace ns_HoLin
 						needed_struct_file.c_header_file.append("}\n\n");
 					}
 				} while (TRUE);
+				if (needed_struct_file) {
+					ns_HoLin::WriteToConsoleA("%s\r\n", needed_struct_file.c_header_file.c_str());
+				}
+				needed_struct_file.c_header_file.clear();
+				return TRUE;
 			}
 			catch (const std::string &error_string) {
 #ifdef FUNCTIONCALLSTACK
 				f.PrintHistoryLog();
 #endif
-				std::wcout << error_string.c_str() << '\n';
-				return FALSE;
+				ns_HoLin::WriteToConsoleA("%s\r\n", error_string.c_str());
 			}
 			catch (const wchar_t *p_error_string) {
 #ifdef FUNCTIONCALLSTACK
 				f.PrintHistoryLog();
 #endif
-				std::wcout << p_error_string << '\n';
-				return FALSE;
+				ns_HoLin::WriteToConsole(L"%s\r\n", p_error_string);
 			}
 			catch (const std::length_error &len) {
-				std::cout << len.what() << '\n';
-				return FALSE;
+				ns_HoLin::WriteToConsoleA("%s\r\n", len.what());
 			}
 			catch (const std::bad_alloc &bad) {
-				std::cout << bad.what() << '\n';
-				return FALSE;
+				ns_HoLin::WriteToConsoleA("%s\r\n", bad.what());
 			}
 			catch (sErrorMessageException *p_error_message) {
 				if (p_error_message) {
-					std::cout << p_error_message->error_messages << '\n';
+					ns_HoLin::WriteToConsole(L"%s\r\n", p_error_message->error_messages);
 					delete p_error_message;
 					p_error_message = nullptr;
 				}
-				return FALSE;
 			}
 			catch (std::exception &e) {
-				std::cout << e.what() << '\n';
-				return FALSE;
+				ns_HoLin::WriteToConsoleA("%s\r\n", e.what());
 			}
-			std::cout << needed_struct_file.c_header_file << '\n';
-			needed_struct_file.c_header_file.clear();
-			return TRUE;
 		}
 		return FALSE;
 	}
@@ -155,7 +152,7 @@ namespace ns_HoLin
 				f.PrintHistoryLog();
 #endif
 				std::cout << needed_struct_file.c_header_file << '\n';
-				std::wcout << __LINE__ << " error expecting token name read " << token << '\n';
+				ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error expecting token name read", token);
 				return FALSE;
 			}
 			if (!this->Name(token)) {
@@ -186,7 +183,7 @@ namespace ns_HoLin
 			}
 		}
 		else {
-			std::wcout << __LINE__ << ' ' << " unexpected token " << token << " expecting token brace.\n";
+			ns_HoLin::WriteToConsole(L"%lu %s \'%d\' %s\r\n", __LINE__, L"unexpected token", token, L"expecting token brace.");
 		}
 		return FALSE;
 	}
@@ -468,15 +465,12 @@ namespace ns_HoLin
 					return TRUE;
 				}
 				else {
-#ifdef FUNCTIONCALLSTACK
-					f.PrintHistoryLog();
-#endif
-					return FALSE;
+					return f.PrintHistoryLog(FALSE);
 				}
 			}
 			else {
 #ifdef FUNCTIONCALLSTACK
-				f.PrintHistoryLog();
+				f.PrintHistoryLog(FALSE);
 #endif
 				return FALSE;
 			}
@@ -489,7 +483,7 @@ namespace ns_HoLin
 			}
 			else {
 #ifdef FUNCTIONCALLSTACK
-				f.PrintHistoryLog();
+				f.PrintHistoryLog(FALSE);
 #endif
 				return FALSE;
 			}
@@ -513,7 +507,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
 		if (token != TOKEN_ARRAY) {
-			std::wcout << __LINE__ << " error, expecting token array.\n";
+			ns_HoLin::WriteToConsole(L"%lu %s\r\n", __LINE__, L"error, expecting token array.");
 			return FALSE;
 		}
 		if (!this->PrimitiveArrayType(token)) {
@@ -524,7 +518,7 @@ namespace ns_HoLin
 		}
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token != TOKEN_NAME) {
-			std::wcout << __LINE__ << " error, expecting token name. " << token << '\n';
+			ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error, expecting token name.", token);
 			return FALSE;
 		}
 		if (!this->Name(token)) {
@@ -532,7 +526,7 @@ namespace ns_HoLin
 		}
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (!this->DimensionList(token)) {
-			std::wcout << __LINE__ << " dimensionlist error.\n";
+			ns_HoLin::WriteToConsole(L"%lu %s\r\n", __LINE__, L"dimensionlist error.");
 			return FALSE;
 		}
 		if (token == TOKEN_SEMICOLON) {
@@ -729,7 +723,7 @@ namespace ns_HoLin
 		else if (token == TOKEN_NAME) {
 			return this->Name(token);
 		}
-		std::wcout << __LINE__ << " error, unexpected token. " << token << '\n';
+		ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error, unexpected token.", token);
 #ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
 #endif
@@ -748,8 +742,11 @@ namespace ns_HoLin
 			if (this->DimensionSize(token)) {
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 				if (token != TOKEN_CBRACKET) {
-					std::wcout << __LINE__ << " error expecting closing bracket " << token << '\n';
-					return f.PrintHistoryLog(FALSE);
+					ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error expecting closing bracket", token);
+#ifdef FUNCTIONCALLSTACK
+					f.PrintHistoryLog(FALSE);
+#endif
+					return FALSE;
 				}
 				if (needed_struct_file) {
 					needed_struct_file.c_header_file.push_back(']');
@@ -792,12 +789,7 @@ namespace ns_HoLin
 				}
 				return TRUE;
 			}
-			else {
-				std::wcout << __LINE__ << '\n';
-				return f.PrintHistoryLog(FALSE);
-			}
 		}
-		std::wcout << __LINE__ << '\n';
 #ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
 #endif
@@ -903,8 +895,7 @@ namespace ns_HoLin
 					buffer[i] = '\0';
 				}
 				else {
-					std::cout << "\nError received character " << ch << '\n';
-					throw(std::string("Error, string must start with alpha character.\n") + std::to_string(ch));
+					throw(std::string("Error, string must start with alpha character.\n") + std::to_string(ch) + std::to_string(__LINE__));
 				}
 			}
 		}

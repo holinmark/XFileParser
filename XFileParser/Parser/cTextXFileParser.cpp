@@ -114,10 +114,8 @@ namespace ns_HoLin
 				linenumber++;
 			}
 			if (trackoutput) {
-#ifdef _DEBUG
-	#ifdef _CONSOLE
+#ifdef _CONSOLE
 				std::clog << sfile.GetCurrentCharToProcess();
-	#endif
 #endif
 			}
 			return TRUE;
@@ -138,7 +136,10 @@ namespace ns_HoLin
 				if (!GetNextChar())
 					return FALSE;
 				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
-				if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.' || ch == (int)'{') {
+				if (ch == (int)'{') {
+					return TRUE;
+				}
+				if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.') {
 					break;
 				}
 				else if (IsWhiteSpace(this, ch)) {
@@ -154,50 +155,46 @@ namespace ns_HoLin
 				}
 			}
 		}
-		if (ch == (int)'{')
-			return TRUE;
-		else {
-			std::size_t limit = blen - 1, i = 1;
-			
-			buff[0] = static_cast<char>(ch);
-			buff[1] = '\0';
-			while(TRUE) {
-				if (i == limit) {
-					return PrintOffendingLine("\n%s\n%zu\n%u", "Error maximum string length reached.", linenumber, __LINE__);
-				}
-				if (!GetNextChar()) {
-					return FALSE;
-				}
-				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
-				if (ch == (int)' ' || ch == (int)'\n') {
-					if (GetNextToken('{')) {
-						return TRUE;
-					}
-					else {
-						break;
-					}
-				}
-				else if (ch == (int)'\r') {
-					return this->GetCarriageReturn();
-				}
-				else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
-					buff[i++] = static_cast<char>(ch);
-					buff[i] = '\0';
-				}
-				else if (ch == (int)'{') {
+		std::size_t limit = blen - 2, i = 1;
+		
+		buff[0] = static_cast<char>(ch);
+		buff[1] = '\0';
+		while(TRUE) {
+			if (i == limit) {
+				return PrintOffendingLine("\n%s\n%zu\n%u", "Error maximum string length reached.", linenumber, __LINE__);
+			}
+			if (!GetNextChar()) {
+				return FALSE;
+			}
+			ch = static_cast<int>(sfile.GetCurrentCharToProcess());
+			if (ch == (int)' ' || ch == (int)'\n') {
+				if (GetNextToken('{')) {
 					return TRUE;
 				}
 				else {
-					
-					return PrintOffendingLine("\n%s \'%c\' %s \'{\'%s%zu\n%u\n",
-						"Error unexpected token",
-						static_cast<char>(ch),
-						"expecting",
-						"\nLine : ",
-						linenumber,
-						__LINE__);
-						
+					break;
 				}
+			}
+			else if (ch == (int)'\r') {
+				return this->GetCarriageReturn();
+			}
+			else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
+				buff[i++] = static_cast<char>(ch);
+				buff[i] = '\0';
+			}
+			else if (ch == (int)'{') {
+				return TRUE;
+			}
+			else {
+				
+				return PrintOffendingLine("\n%s \'%c\' %s \'{\'%s%zu\n%u\n",
+					"Error unexpected token",
+					static_cast<char>(ch),
+					"expecting",
+					"\nLine : ",
+					linenumber,
+					__LINE__);
+					
 			}
 		}
 		return PrintOffendingLine("\n%s%s%zu\n%u\n", "Error buffer overload.", "\nLine : ", linenumber, __LINE__);
@@ -338,7 +335,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1;
+		std::size_t limit = blen - 2;
 		int ch = 0;
 		
 		for (std::size_t index = 0; index < limit; ++index) {
@@ -376,7 +373,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1;
+		std::size_t limit = blen - 2;
 		int ch = 0;
 		
 		while (TRUE) {
@@ -449,7 +446,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1, i = 0;
+		std::size_t limit = blen - 2, i = 0;
 
 		while (TRUE) {
 			if (!GetNextChar())
@@ -747,7 +744,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1;
+		std::size_t limit = blen - 2;
 		
 		if (!GetDigit(buff, blen))
 			return FALSE;
@@ -803,7 +800,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1;
+		std::size_t limit = blen - 2;
 
 		for (std::size_t i = 0; i < limit; ++i) {
 			if (!GetNextChar())
@@ -838,7 +835,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 1;
+		std::size_t limit = blen - 2;
 
 		for (std::size_t i = 0; i < limit; ) {
 			if (!GetNextChar())
@@ -1465,7 +1462,7 @@ namespace ns_HoLin
 		if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
 			buff[0] = sfile.GetCurrentCharToProcess();
 			buff[1] = '\0';
-			if (GetReservedWord(&buff[1], blen - 1, '{')) {
+			if (GetReservedWord(&buff[1], blen - 2, '{')) {
 				if (p_mesh->p_extra == nullptr) {
 					p_mesh->p_extra = new ns_HoLin::sMeshExtraAttributes;
 					if (p_mesh->p_extra == NULL) {
@@ -1741,13 +1738,12 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		std::string name;
-
+		ns_HoLin::sFrame *pframe = nullptr;
+		
 		buff[0] = '\0';
 		if (!GetTemplateName(buff, blen))
 			return FALSE;
-
-		ns_HoLin::sFrame *pframe = pseq->CreateNewFrame();
-
+		pframe = pseq->CreateNewFrame();
 		if (pframe != nullptr) {
 			if (strlen(buff) > 0)
 				name = buff;
@@ -1982,8 +1978,11 @@ namespace ns_HoLin
 
 		buff[0] = '\0';
 		memset((void*)buff, 0, blen);
-		if (!GetTemplateName(buff, blen))
-			return FALSE;
+		if (sfile.GetCurrentCharToProcess() != '{') {
+			if (!GetTemplateName(buff, blen)) {
+				return FALSE;
+			}
+		}
 		if (strlen(buff) == 0) {
 			CreateName(buff, blen);
 			strcat_s(buff, blen, "_Animation");
@@ -2207,7 +2206,12 @@ namespace ns_HoLin
 					return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s%c%s\n%zu\n%u\n", "Unexpected token \'", sfile.GetCurrentCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%c%s\n%zu\n%u\n",
+					"Unexpected token \'",
+					sfile.GetCurrentCharToProcess(),
+					"\'.\nLine : ",
+					linenumber,
+					__LINE__);
 			}
 		}
 		return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
@@ -2239,7 +2243,13 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s%c%s%zu\n%u\n", "Unexpected token \'", sfile.GetCurrentCharToProcess(), "\'.\nLine : ", linenumber, __LINE__);
+					return PrintOffendingLine(
+						"\n%s%c%s%zu\n%u\n",
+						"Unexpected token \'",
+						sfile.GetCurrentCharToProcess(),
+						"\'.\nLine : ",
+						linenumber,
+						__LINE__);
 				}
 			}
 			else {
@@ -2271,7 +2281,15 @@ namespace ns_HoLin
 					}
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.GetCurrentCharToProcess(), "expecting", token, "Line : ", linenumber, __LINE__);
+					return PrintOffendingLine(
+							"\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n",
+							"Error unexpected token",
+							sfile.GetCurrentCharToProcess(),
+							"expecting",
+							token,
+							"Line : ",
+							linenumber,
+							__LINE__);
 				}
 			}
 			else {

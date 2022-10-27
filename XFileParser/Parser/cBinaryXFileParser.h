@@ -46,6 +46,7 @@
 #include <any>
 #include <memory>
 #include <stdexcept>
+#include "Output.h"
 
 namespace ns_HoLin
 {

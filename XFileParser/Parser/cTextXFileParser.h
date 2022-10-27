@@ -22,6 +22,7 @@
 #include <cstdarg>
 #include <fstream>
 
+#include "Output.h"
 #include "sFileIO.h"
 #include "sMeshList.h"
 #include "sMaterialList.h"
