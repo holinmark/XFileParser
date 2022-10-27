@@ -6,9 +6,12 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.txt
 *.b
+*.x
 *.exe
+Errorlog.txt
+Cleanup.txt
+file.txt
 
 XFileParser/vc140.idb
 

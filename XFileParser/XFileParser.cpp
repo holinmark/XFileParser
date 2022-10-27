@@ -198,7 +198,7 @@ int wmain(DWORD argv, const wchar_t **argc)
 
 #if defined(_WINDOWS)
 	// Win32 application
-	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
+	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.x")) {
 		if (xfile.GetXFileType() == TEXT_FILE) {
 			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
 	

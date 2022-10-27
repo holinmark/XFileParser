@@ -1,0 +1,64 @@
+# XFileParser
+A DirectX 11.0 x file mesh parser. Written for consoleapplictions. It can be ported for Win32 mode but
+would need some altering.
+
+
+******************************************************************************************************
+WARNING! There is a risk reading a binary file. This program uses recursion to read a binary file.
+If the file requires many recursive calls this program may/will crash HORRIBLY with memory allocation
+failure.
+******************************************************************************************************
+
+
+If you know that the mesh file is error free, comment out
+<code>
+//#define FUNCTIONCALLSTACK
+</code>
+in file stdafx.h line 3. It should parse the mesh file much faster.
+
+To use in Win32 mode just declare a variable type ns_HoLin::cXFile then call method ReadXFile(name of x file) returns
+TRUE if success. Then call method GetXFileType() for type of mesh file (TEXT_FILE, BINARY_FILE or ZIP_FILE). TEXT_FILE only
+supported at the moment. Then declare type ns_HoLin::cTextXFileParser pointer to receive text data.
+
+<code>
+ns_HoLin::cXFile file;
+
+if (file.ReadXFile(file_name)) {
+	// returns TRUE if success FALSE otherwise
+	// then call method GetXFileType() returns TEXT_FILE or BINARY_FILE or ZIP_FILE
+	// right now only TEXT_FILE supported.
+	if (file.GetXFileType() == TEXT_FILE) {
+		// declare variable ns_HoLin::cTextXFileParser pointer and call method GetTextData() for text version
+		ns_HoLin::cTextXFileParser *pdata = (ns_HoLin::cTextXFileParser*)file.GetTextData();
+		// with *pdata variable you have access to all mesh, frame and animation
+		if (pdata) {
+			pdata->xfiledata; // holds all data
+		}
+	}
+}
+</code>
+
+If I have time I'll add more descriptions.  If you have notepad.exe installed then an error will open notepad.exe displaying
+the error in the mesh file.
+
+sMeshList.h
+
+struct sMeshList is where all the mesh data is stored. It is stored in a linked list:
+	'pfirstmesh' points to the first mesh.
+	'plastmesh' points to the last mesh.
+
+struct sMesh is where each individual mesh is stored:
+	'name' is the name of the mesh, if no name is assigned to the mesh the an arbitrary name is given.
+	'vertices' is where all the vertices is stored.
+	'meshfaces' is where all the polygons of the mesh is stored.
+	'p_extra' is a pointer to more mesh data:
+		normals; texture coordinates; skinning information; matrix; materials; duplicates; animation data; color
+		points to NULL if there is no extra information on the mesh.
+	'pnextmesh' points to the next mesh. Points to NULL at end.
+
+Need to does:
+	1 Fix error output. Not working properly.
+	2 Haven't thoroughly tested for bugs.
+	
+holinmark70@gmail.com
+
