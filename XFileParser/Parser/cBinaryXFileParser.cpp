@@ -20,7 +20,7 @@ namespace ns_HoLin
 		if (*hfile) {
 			try {
 				sfile.SetFileHandle(hfile);
-				ns_HoLin::WriteToConsole(L"%s\r\n", L"Binary reading.");
+				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary reading."));
 				do {
 					try {
 						sfile.GetBytesFromFile((BYTE*)&token , sizeof(token), __LINE__, __FILE__);
@@ -75,7 +75,7 @@ namespace ns_HoLin
 			}
 			catch (sErrorMessageException *p_error_message) {
 				if (p_error_message) {
-					ns_HoLin::WriteToConsole(L"%s\r\n", p_error_message->error_messages);
+					ns_HoLin::WriteToConsoleW(L"%s\r\n", p_error_message->error_messages);
 					delete p_error_message;
 					p_error_message = nullptr;
 				}
@@ -152,7 +152,7 @@ namespace ns_HoLin
 				f.PrintHistoryLog();
 #endif
 				std::cout << needed_struct_file.c_header_file << '\n';
-				ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error expecting token name read", token);
+				ns_HoLin::WriteToConsole(TEXT("%lu %s \'%d\'\r\n"), __LINE__, TEXT("error expecting token name read"), token);
 				return FALSE;
 			}
 			if (!this->Name(token)) {
@@ -183,7 +183,7 @@ namespace ns_HoLin
 			}
 		}
 		else {
-			ns_HoLin::WriteToConsole(L"%lu %s \'%d\' %s\r\n", __LINE__, L"unexpected token", token, L"expecting token brace.");
+			ns_HoLin::WriteToConsole(TEXT("%lu %s \'%d\' %s\r\n"), __LINE__, TEXT("unexpected token"), token, TEXT("expecting token brace."));
 		}
 		return FALSE;
 	}
@@ -507,7 +507,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory f(__func__);
 #endif
 		if (token != TOKEN_ARRAY) {
-			ns_HoLin::WriteToConsole(L"%lu %s\r\n", __LINE__, L"error, expecting token array.");
+			ns_HoLin::WriteToConsole(TEXT("%lu %s\r\n"), __LINE__, TEXT("error, expecting token array."));
 			return FALSE;
 		}
 		if (!this->PrimitiveArrayType(token)) {
@@ -518,7 +518,7 @@ namespace ns_HoLin
 		}
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (token != TOKEN_NAME) {
-			ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error, expecting token name.", token);
+			ns_HoLin::WriteToConsole(TEXT("%lu %s \'%d\'\r\n"), __LINE__, TEXT("error, expecting token name."), token);
 			return FALSE;
 		}
 		if (!this->Name(token)) {
@@ -526,7 +526,7 @@ namespace ns_HoLin
 		}
 		sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 		if (!this->DimensionList(token)) {
-			ns_HoLin::WriteToConsole(L"%lu %s\r\n", __LINE__, L"dimensionlist error.");
+			ns_HoLin::WriteToConsole(TEXT("%lu %s\r\n"), __LINE__, TEXT("dimensionlist error."));
 			return FALSE;
 		}
 		if (token == TOKEN_SEMICOLON) {
@@ -723,7 +723,7 @@ namespace ns_HoLin
 		else if (token == TOKEN_NAME) {
 			return this->Name(token);
 		}
-		ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error, unexpected token.", token);
+		ns_HoLin::WriteToConsole(TEXT("%lu %s \'%d\'\r\n"), __LINE__, TEXT("error, unexpected token."), token);
 #ifdef FUNCTIONCALLSTACK
 		f.PrintHistoryLog();
 #endif
@@ -742,7 +742,7 @@ namespace ns_HoLin
 			if (this->DimensionSize(token)) {
 				sfile.GetBytesFromFile((BYTE*)&token, sizeof(token), __LINE__, __FILE__);
 				if (token != TOKEN_CBRACKET) {
-					ns_HoLin::WriteToConsole(L"%lu %s \'%d\'\r\n", __LINE__, L"error expecting closing bracket", token);
+					ns_HoLin::WriteToConsole(TEXT("%lu %s \'%d\'\r\n"), __LINE__, TEXT("error expecting closing bracket"), token);
 #ifdef FUNCTIONCALLSTACK
 					f.PrintHistoryLog(FALSE);
 #endif

@@ -187,7 +187,7 @@ namespace ns_HoLin
 			hr = siResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 			if (SUCCEEDED(hr)) {
 				file_name = pszFilePath;
-				ns_HoLin::WriteToConsole(L"%s %s\r\n", L"File selected", pszFilePath);
+				ns_HoLin::WriteToConsole(TEXT("%s %s\r\n"), TEXT("File selected"), pszFilePath);
 				CoTaskMemFree(pszFilePath);
 				return (HRESULT)S_OK;
 			}
@@ -205,14 +205,14 @@ namespace ns_HoLin
 			xfile.GetBinaryData()->needed_struct_file.output_header_to_file = show_headers;
 			if (xfile.ReadXFile(file_name.c_str(), FALSE, boverride)) {
 				if (xfile.GetXFileType() == TEXT_FILE) {
-					MessageBox(nullptr, L"Text file.", L"File type.", MB_OK);
+					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
 				}
 				else if (xfile.GetXFileType() == BINARY_FILE) {
-					MessageBox(nullptr, L"Binary file.", L"File type.", MB_OK);
+					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
 				}
 			}
 			else {
-				MessageBox(nullptr, L"Error reading file.", L"Error!", MB_OK);
+				ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
 			}
 		}
 		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
