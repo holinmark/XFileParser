@@ -207,6 +207,7 @@ namespace ns_HoLin
 				if (xfile.GetXFileType() == TEXT_FILE) {
 					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
 					PrintMesh(&(xfile.GetTextData()->xfiledata.smeshlist));
+					PrintFrames(xfile.GetTextData()->xfiledata.sframeslist.pfirstseq);
 				}
 				else if (xfile.GetXFileType() == BINARY_FILE) {
 					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
@@ -425,7 +426,7 @@ namespace ns_HoLin
 					if (!pframeseq->parent_children[pframe->name].empty()) {
 						
 						ns_HoLin::WriteToConsole(
-							TEXT("\t\t%s %zu\r\n\t\t"),
+							TEXT("\t\t%s %zu :  "),
 							TEXT("Children"),
 							pframeseq->parent_children[pframe->name].size());
 							
