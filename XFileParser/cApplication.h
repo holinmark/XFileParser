@@ -7,11 +7,20 @@
 #define ID_BUTTONSHOWHEADER				ID_BUTTONSELECTFILE + 1
 
 #include <Windows.h>
-#include <string>
+#include <DirectXMath.h>
 #include <WRL\client.h>
 #include <Shobjidl.h>
+#include <string>
+#include <fstream>
+#include <cwchar>
 #include "cBaseWindow.h"
 #include "Output.h"
+#include "sMaterialList.h"
+#include "sFrameList.h"
+#include "sMeshList.h"
+#include "cTextXFileParser.h"
+#include "cBinaryXFileParser.h"
+#include "cXFile.h"
 
 namespace ns_HoLin
 {
@@ -46,6 +55,13 @@ namespace ns_HoLin
 	{
 		return reinterpret_cast<ns_HoLin::cApplication*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 	}
+	void PrintMatrix(DirectX::XMFLOAT4X4);
+	void PrintMaterials(std::vector<ns_HoLin::sMaterial>&, ns_HoLin::sMesh*, const char*);
+	void PrintMesh(ns_HoLin::sMeshList*);
+	void PrintFrames(ns_HoLin::sSequenceOfFrames*);
+	void PrintAnimationSet(ns_HoLin::sAnimationSetList*);
+	void PrintDuplicates(ns_HoLin::sMesh*);
+	void PrintData(ns_HoLin::cTextXFileParser*);
 }
 
 #endif
