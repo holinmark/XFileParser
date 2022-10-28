@@ -379,7 +379,9 @@ namespace ns_HoLin
 				if (pmesh->p_extra) {
 					if (pmesh->p_extra->p_skininfo) {
 						for (std::size_t i=0; i<pmesh->p_extra->p_skininfo->p_skin_weights.size(); ++i) {
+							
 							if (pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size() == pmesh->p_extra->p_skininfo->p_skin_weights[i].p_vertexIndices.size()) {
+								
 								for (std::size_t j=0; j<pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size(); ++j) {
 									/*
 									ns_HoLin::WriteToConsole(TEXT("%u%s%f\r\n"),
@@ -396,7 +398,7 @@ namespace ns_HoLin
 			}
 		}
 		else {
-			ns_HoLin::WriteToConsole(TEXT("%s\r\n\r\n"), "No mesh.");
+			ns_HoLin::WriteToConsole(TEXT("%s\r\n\r\n"), TEXT("No mesh."));
 		}
 	}
 	
@@ -406,7 +408,7 @@ namespace ns_HoLin
 			std::size_t index = 1;
 			ns_HoLin::sFrame *pframe;
 			
-			ns_HoLin::WriteToConsole(TEXT("\r\n\r\n%s :\r\n"), "Frames");
+			ns_HoLin::WriteToConsole(TEXT("\r\n\r\n%s :\r\n"), TEXT("Frames"));
 			while (pframeseq) {
 				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Keys in frame sequences."));
 				for (auto n : pframeseq->framenames) {
@@ -419,12 +421,12 @@ namespace ns_HoLin
 					if (pframe->parent_name.length() > 0)
 						ns_HoLin::WriteToConsoleA("\t\t%s %s\r\n", "Parent : ", pframe->parent_name.c_str());
 					else
-						ns_HoLin::WriteToConsole(TEXT("\t\t%s\r\n"), "No parent");
+						ns_HoLin::WriteToConsole(TEXT("\t\t%s\r\n"), TEXT("No parent"));
 					if (!pframeseq->parent_children[pframe->name].empty()) {
 						
 						ns_HoLin::WriteToConsole(
 							TEXT("\t\t%s %zu\r\n\t\t"),
-							"Children",
+							TEXT("Children"),
 							pframeseq->parent_children[pframe->name].size());
 							
 						for (auto c : pframeseq->parent_children[pframe->name]) {
@@ -433,7 +435,7 @@ namespace ns_HoLin
 						ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
 					}
 					if (pframe->mesh.size() > 0) {
-						ns_HoLin::WriteToConsole(TEXT("%s\r\n"), "Meshes");
+						ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Meshes"));
 						for (auto m : pframe->mesh) {
 							ns_HoLin::WriteToConsoleA("%s, ", m.c_str());
 						}

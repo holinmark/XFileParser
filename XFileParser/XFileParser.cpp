@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "WindowsTemplate.h"
+#include "XFileParser.h"
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
