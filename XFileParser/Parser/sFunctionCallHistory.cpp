@@ -19,9 +19,9 @@ namespace ns_HoLin
 	BOOL sFunctionCallHistory::PrintHistoryLog(BOOL ret)
 	{
 		if (sFunctionCallHistory::history.size() > 0) {
-			ns_HoLin::WriteToConsole(L"%s\r\n", L"History log.");
+			std::clog << "History log.\n";
 			for (auto it : sFunctionCallHistory::history)
-				ns_HoLin::WriteToConsoleA("%s\r\n", it.c_str());
+				std::clog << it.c_str() << '\n';
 			sFunctionCallHistory::history.clear();
 		}
 		return ret;

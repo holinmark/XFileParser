@@ -295,12 +295,15 @@ namespace ns_HoLin
 #endif
 
 		if (sfile.GetCurrentCharToProcess() != '{') {
-			if (!GetNextToken('{'))
-				return functioncalls.PrintHistoryLog();
+			if (!GetNextToken('{')) {
+				this->PrintOffendingLine("\r\n%s \'%c\'\r\n", "Error expecting \'{\' got", sfile.GetCurrentCharToProcess());
+				return FALSE;
+			}
 		}
 		if (Get2DArray(buff, blen, (void*)&matrix, 4, 4, &cTextXFileParser::GetMatrixBody)) {
-			if (GetNextToken('}'))
+			if (GetNextToken('}')) {
 				return TRUE;
+			}
 		}
 		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
 			"Unexpected token",
@@ -317,13 +320,17 @@ namespace ns_HoLin
 #endif
 
 		if (sfile.GetCurrentCharToProcess() != '{') {
-			if (!GetNextToken('{'))
-				return functioncalls.PrintHistoryLog();
+			if (!GetNextToken('{')) {
+				functioncalls.PrintHistoryLog();
+				this->PrintOffendingLine("\r\n%s \'%c\'\r\n", "Error expecting \'{\' got", sfile.GetCurrentCharToProcess());
+				return FALSE;
+			}
 		}
 		if (Get2DArray(buff, blen, (void*)&matrix, 4, 4, &cTextXFileParser::GetMatrixBody)) {
 			if (GetNextToken(';')) {
-				if (GetNextToken('}'))
+				if (GetNextToken('}')) {
 					return TRUE;
+				}
 			}
 		}
 		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
@@ -1342,15 +1349,20 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 
-		if (!GetUnsignedInteger(buff, blen))
-			return functioncalls.PrintHistoryLog();
+		if (!GetUnsignedInteger(buff, blen)) {
+			this->PrintOffendingLine("\r\n%s\r\n%u\r\n", "Error GetUnsignedInteger returned FALSE.", __LINE__);
+			return FALSE;
+		}
 		p_mesh->p_extra->sduplicates.nIndices = (DWORD)std::atoi(buff);
 		if (sfile.GetCurrentCharToProcess() != ';') {
-			if (!GetNextToken(';'))
+			if (!GetNextToken(';')) {
 				return FALSE;
+			}
 		}
-		if (!GetUnsignedInteger(buff, blen))
-			return functioncalls.PrintHistoryLog();
+		if (!GetUnsignedInteger(buff, blen)) {
+			this->PrintOffendingLine("\r\n%s\r\n%u\r\n", "Error GetUnsignedInteger returned FALSE.", __LINE__);
+			return FALSE;
+		}
 		if (sfile.GetCurrentCharToProcess() != ';') {
 			if (!GetNextToken(';'))
 				return FALSE;
@@ -1360,8 +1372,9 @@ namespace ns_HoLin
 			return FALSE;
 		if (sfile.GetCurrentCharToProcess() == ';') {
 			if (sfile.GetCurrentCharToProcess() != '}') {
-				if (!GetNextToken('}'))
+				if (!GetNextToken('}')) {
 					return FALSE;
+				}
 			}
 		}
 		else {
@@ -2253,8 +2266,9 @@ namespace ns_HoLin
 				}
 			}
 			else {
-				if (sfile.GetEndOfFileStatus())
+				if (sfile.GetEndOfFileStatus()) {
 					return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file error.\nLine : ", linenumber, __LINE__);
+				}
 				return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 			}
 		}
@@ -2296,7 +2310,15 @@ namespace ns_HoLin
 				return PrintOffendingLine("\n%s%zu\n%u", "Error unexpected end of file.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error line number expecting", sfile.GetCurrentCharToProcess(), "Line : ", linenumber, __LINE__);
+		
+		return PrintOffendingLine(
+			"\n%s \'%c\'\n%s%zu\n%u\n",
+			"Error line number expecting",
+			sfile.GetCurrentCharToProcess(),
+			"Line : ",
+			linenumber,
+			__LINE__);
+			
 	}
 	/*
 	void cTextXFileParser::GetOffendingLine(std::string &before, std::string &after)
@@ -2357,11 +2379,10 @@ namespace ns_HoLin
 		functioncalls.PrintHistoryLog();
 		std::clog.rdbuf(clogbuf);
 		fout.close();
-#if defined(_WINDOWS)
+#ifdef _WINDOWS
 		MessageBox(nullptr, L"Error, see Errorlog.txt file for more information.", L"Error", MB_OK);
 #else
-		std::wcout << L"Errorlog.txt\n";
-		intptr_t h = _wspawnl(_P_DETACH, L"C:\\Windows\\Notepad.exe", L"C:\\Windows\\Notepad.exe", L"Errorlog.txt", NULL);
+		std::wcout << L"See file \'Errorlog.txt\' for more information.\n";
 #endif
 		if (pbuff) {
 			delete[] pbuff;
