@@ -24,7 +24,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsTemplate.h">
+    <ClInclude Include="XFileParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cApplication.h">
@@ -74,7 +74,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsTemplate.cpp">
+    <ClCompile Include="XFileParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cApplication.cpp">

@@ -180,7 +180,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="WindowsTemplate.h" />
+    <ClInclude Include="XFileParser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser\cBinaryXFileParser.cpp" />
@@ -198,7 +198,7 @@
     <ClCompile Include="cBaseWindow.cpp" />
     <ClCompile Include="Output.cpp" />
     <ClInclude Include="stdafx.cpp" />
-    <ClCompile Include="WindowsTemplate.cpp" />
+    <ClCompile Include="XFileParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WindowsTemplate.rc" />
