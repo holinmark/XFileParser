@@ -31,7 +31,11 @@
 #include <exception>
 
 #include "Resource.h"
+
+#ifdef FUNCTIONCALLSTACK
 #include "Output.h"
+#endif
+
 #include "cBaseWindow.h"
 #include "cApplication.h"
 #include "cBinaryXFileParser.h"

@@ -42,48 +42,53 @@ namespace ns_HoLin
 		}
 		trackoutput = btrack;
 		sfile.SetFileHandle(hfile);
-		while (TRUE) {
-			if (!GetNextChar()) {
-				if (sfile.GetEndOfFileStatus())
-					return TRUE;
-				else
-					break;
-			}
-			if (sfile.GetEndOfFileStatus()) {
-				return TRUE;
-			}
-			if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
-				continue;
-			else if (sfile.GetCurrentCharToProcess() == '/') {
-				if (GetComment()) {
-					if (sfile.GetEndOfFileStatus()) {
-						return TRUE;
-					}
-					else {
-						continue;
-					}
-				}
-				else {
-					break;
-				}
-			}
-			else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
-				buff[0] = sfile.GetCurrentCharToProcess();
-				buff[1] = '\0';
-				if (GetReservedWord(&buff[1], blen - 1, '{')) {
-					if (!ExtractTemplates(buff, blen)) {
+		try {
+			while (TRUE) {
+				try {
+					if (!GetNextChar()) {
 						break;
 					}
 				}
+				catch (const std::wstring &error_str) {
+					return TRUE;
+				}
+				if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
+					continue;
+				else if (sfile.GetCurrentCharToProcess() == '/') {
+					try {
+						if (!GetComment()) {
+							break;
+						}
+					}
+					catch (const std::wstring &error_str) {
+						return TRUE;
+					}
+					continue;
+				}
+				else if (std::isalpha((int)sfile.GetCurrentCharToProcess())) {
+					buff[0] = sfile.GetCurrentCharToProcess();
+					buff[1] = '\0';
+					if (GetReservedWord(&buff[1], blen - 1, '{')) {
+						if (!ExtractTemplates(buff, blen)) {
+							break;
+						}
+					}
+					else {
+						return PrintOffendingLine("\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
+							"Error extracting string", buff, "Mesh line number :", linenumber, __LINE__);
+					}
+				}
 				else {
-					return PrintOffendingLine("\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
-						"Error extracting string", buff, "Mesh line number :", linenumber, __LINE__);
+					return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+						"Unknown token", sfile.GetCurrentCharToProcess(), "Mesh line number :", linenumber, __LINE__);
 				}
 			}
-			else {
-				return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
-					"Unknown token", sfile.GetCurrentCharToProcess(), "Mesh line number :", linenumber, __LINE__);
-			}
+		}
+		catch (const std::wstring &error_string) {
+			MessageBox(nullptr, error_string.c_str(), L"Error!", MB_OK);
+		}
+		catch (const std::exception &e) {
+			MessageBoxA(nullptr, e.what(), "Error!", MB_OK);
 		}
 		return FALSE;
 	}
@@ -114,7 +119,7 @@ namespace ns_HoLin
 				linenumber++;
 			}
 			if (trackoutput) {
-#ifdef _CONSOLE
+#ifdef FUNCTIONCALLSTACK
 				std::clog << sfile.GetCurrentCharToProcess();
 #endif
 			}
@@ -131,77 +136,79 @@ namespace ns_HoLin
 		int ch = 0;
 
 		buff[0] = '\0';
-		if (sfile.GetCurrentCharToProcess() != '{') {
-			while (TRUE) {
-				if (!GetNextChar())
+		if (sfile.GetCurrentCharToProcess() == (int)'{') {
+			return TRUE;
+		}
+		if (!this->GetNextInput(IsValidCharOpening)) {
+			return FALSE;
+		}
+		ch = sfile.GetCurrentCharToProcess();
+		if (ch == (int)'{') {
+			return TRUE;
+		}
+		if (ch == (int)'_' || std::isalpha(ch) || ch == (int)'.' || ch == (int)'-') {
+			std::size_t limit = blen - 2, i = 1;
+			
+			buff[0] = static_cast<char>(ch);
+			buff[1] = '\0';
+			while(TRUE) {
+				if (i == limit) {
+					return PrintOffendingLine(
+							"\r\n%s %zu\r\n%u\r\n",
+							"Error maximum string length reached.\r\nMesh line number:",
+							linenumber,
+							__LINE__);
+				}
+				if (!GetNextChar()) {
 					return FALSE;
+				}
 				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
-				if (ch == (int)'{') {
+				if (ch == (int)' ' || ch == (int)'\n') {
+					if (GetNextToken('{')) {
+						return TRUE;
+					}
+					else {
+						break;
+					}
+				}
+				else if (ch == (int)'\r') {
+					return this->GetCarriageReturn();
+				}
+				else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
+					buff[i++] = static_cast<char>(ch);
+					buff[i] = '\0';
+				}
+				else if (ch == (int)'{') {
 					return TRUE;
 				}
-				if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.') {
-					break;
-				}
-				else if (IsWhiteSpace(this, ch)) {
-					continue;
-				}
 				else {
-					return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
-						"Error unknown token",
+					
+					return PrintOffendingLine(
+						"\r\n%s \'%c\' %s \'{\'\r\n%s %zu\r\n%u\r\n",
+						"Error unexpected token",
 						static_cast<char>(ch),
+						"expecting",
 						"Mesh line number :",
 						linenumber,
 						__LINE__);
+						
 				}
 			}
-		}
-		std::size_t limit = blen - 2, i = 1;
-		
-		buff[0] = static_cast<char>(ch);
-		buff[1] = '\0';
-		while(TRUE) {
-			if (i == limit) {
-				return PrintOffendingLine(
+			return PrintOffendingLine(
 						"\r\n%s %zu\r\n%u\r\n",
-						"Error maximum string length reached.\r\nMesh line number:",
+						"Error buffer overload.\r\nMesh line number :",
 						linenumber,
 						__LINE__);
-			}
-			if (!GetNextChar()) {
-				return FALSE;
-			}
-			ch = static_cast<int>(sfile.GetCurrentCharToProcess());
-			if (ch == (int)' ' || ch == (int)'\n') {
-				if (GetNextToken('{')) {
-					return TRUE;
-				}
-				else {
-					break;
-				}
-			}
-			else if (ch == (int)'\r') {
-				return this->GetCarriageReturn();
-			}
-			else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
-				buff[i++] = static_cast<char>(ch);
-				buff[i] = '\0';
-			}
-			else if (ch == (int)'{') {
-				return TRUE;
-			}
-			else {
-				
-				return PrintOffendingLine("\r\n%s \'%c\' %s \'{\'\r\n%s %zu\r\n%u\r\n",
-					"Error unexpected token",
-					static_cast<char>(ch),
-					"expecting",
-					"Mesh line number :",
-					linenumber,
-					__LINE__);
-					
-			}
 		}
-		return PrintOffendingLine("\n%s %zu\r\n%u\r\n", "Error buffer overload.\r\nMesh line number :", linenumber, __LINE__);
+		else {
+			return this->PrintOffendingLine(
+							"\r\n%s.\r\n%s %zu\r\n%u\r\n",
+							"Error unexpected character",
+							"Mesh line number:",
+							linenumber,
+							__LINE__);
+		}
+		return this->PrintOffendingLine(NULL);
 	}
 
 	BOOL cTextXFileParser::GetDigit(char *buff, std::size_t blen)
@@ -274,13 +281,21 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
-						"Unexpected token", sfile.GetCurrentCharToProcess(), "Mesh line number :", linenumber, __LINE__);
+					return PrintOffendingLine(
+						"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+						"Unexpected token",
+						sfile.GetCurrentCharToProcess(),
+						"Mesh line number :",
+						linenumber,
+						__LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n",
-					"Unexpected end of file. Mesh line number :", linenumber, __LINE__);
+				return PrintOffendingLine(
+					"\r\n%s %zu\r\n%u\r\n",
+					"Unexpected end of file. Mesh line number :",
+					linenumber,
+					__LINE__);
 			}
 		}
 		return FALSE;
@@ -310,7 +325,7 @@ namespace ns_HoLin
 					"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
 					"Error expecting \'{\' got",
 					sfile.GetCurrentCharToProcess(),
-					"\r\nMesh line number",
+					"Mesh line number",
 					linenumber,
 					__LINE__);
 				return FALSE;
@@ -321,7 +336,8 @@ namespace ns_HoLin
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
+		return PrintOffendingLine(
+			"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 			"Unexpected token",
 			sfile.GetCurrentCharToProcess(),
 			"Mesh line number :",
@@ -341,7 +357,7 @@ namespace ns_HoLin
 					"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
 					"Error expecting \'{\' got",
 					sfile.GetCurrentCharToProcess(),
-					"Mesh line number",
+					"Mesh line number:",
 					linenumber,
 					__LINE__);
 			}
@@ -353,7 +369,8 @@ namespace ns_HoLin
 				}
 			}
 		}
-		return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+		return PrintOffendingLine(
+						"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
 						"Unexpected token",
 						sfile.GetCurrentCharToProcess(),
 						"Mesh line number :",
@@ -396,7 +413,7 @@ namespace ns_HoLin
 			}
 		}
 		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n",
-			"Error buffer overload. Mesh line number : ", linenumber, __LINE__);
+			"Error buffer overload. Mesh line number :", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetName(char *buff, std::size_t blen, char sep)
@@ -409,7 +426,7 @@ namespace ns_HoLin
 		
 		while (TRUE) {
 			if (!GetNextChar()) {
-				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error. Mesh line number :", linenumber, __LINE__);
+				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error. Mesh line number:", linenumber, __LINE__);
 			}
 			ch = static_cast<int>(sfile.GetCurrentCharToProcess());
 			if (std::isalnum(ch) || ch == (int)'_' || ch == (int)'-' || ch == (int)'.') {
@@ -423,7 +440,7 @@ namespace ns_HoLin
 					"Error no string input. Mesh line number :", linenumber, __LINE__);
 			}
 			else {
-				return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+				return PrintOffendingLine("\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 					"Error unknown token", static_cast<char>(ch), "Mesh line number :", linenumber, __LINE__);
 			}
 		}
@@ -460,7 +477,7 @@ namespace ns_HoLin
 						return TRUE;
 				}
 				else {
-					return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+					return PrintOffendingLine("\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 						"Unknown token", static_cast<char>(ch), "Mesh line number :", linenumber, __LINE__);
 				}
 			}
@@ -493,16 +510,23 @@ namespace ns_HoLin
 		}
 		while (TRUE) {
 			if (i == limit) {
-				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error maximum string length reached. Mesh line number", linenumber, __LINE__);
+				return PrintOffendingLine(
+							"\r\n%s %zu\r\n%u\r\n",
+							"Error maximum string length reached. Mesh line number",
+							linenumber,
+							__LINE__);
 			}
 			if (!GetNextChar())
 				return FALSE;
 			if (sfile.GetCurrentCharToProcess() == '\"') {
 				if (i == 0) {
-					return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n",
-						"Error string length zero declared. Mesh line number :", linenumber, __LINE__);
+					return PrintOffendingLine(
+						"\r\n%s %zu\r\n%u\r\n",
+						"Error string length zero declared. Mesh line number :",
+						linenumber,
+						__LINE__);
 				}
-				if (!GetNextToken(sep))
+				if (!GetNextToken(sep)) {
 					return PrintOffendingLine(
 							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Error expecting token",
@@ -510,6 +534,7 @@ namespace ns_HoLin
 							"Mesh line number :",
 							linenumber,
 							__LINE__);
+				}
 				return TRUE;
 			}
 			else if (std::isalnum((int)sfile.GetCurrentCharToProcess()) || std::ispunct((int)sfile.GetCurrentCharToProcess())) {
@@ -517,8 +542,13 @@ namespace ns_HoLin
 				buff[i] = '\0';
 			}
 			else {
-				if (sfile.GetCurrentCharToProcess() == '\n' || sfile.GetCurrentCharToProcess() == '\r')
-					return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error unexpected carriage return.\r\nLine :", linenumber, __LINE__);
+				if (sfile.GetCurrentCharToProcess() == '\n' || sfile.GetCurrentCharToProcess() == '\r') {
+					return PrintOffendingLine(
+							"\r\n%s %zu\r\n%u\r\n",
+							"Error unexpected carriage return. Mesh line number:",
+							linenumber,
+							__LINE__);
+				}
 				return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
 					"Error extracting string. Unknown character",
 					sfile.GetCurrentCharToProcess(),
@@ -698,8 +728,13 @@ namespace ns_HoLin
 				if (pmesh->p_extra->smeshmateriallist[i].name == std::string(buff))
 					return TRUE;
 			}
-			return PrintOffendingLine("\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
-				"Error could not find material named", buff, "Mesh line number :", linenumber, __LINE__);
+			return PrintOffendingLine(
+						"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
+						"Error could not find material named",
+						buff,
+						"Mesh line number :",
+						linenumber,
+						__LINE__);
 		}
 		else if (sfile.GetCurrentCharToProcess() == 'M') {
 			buff[0] = sfile.GetCurrentCharToProcess();
@@ -756,9 +791,15 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		if (nmaterials != pmesh->p_extra->smeshmateriallist.size()) {
-			return PrintOffendingLine("\r\n%s %zu %s %u %s %zu\r\n%u\r\n",
-				"Error expecting", pmesh->p_extra->smeshmateriallist.size(), "materials got", nmaterials,
-				"materials.\r\nMesh line number :", linenumber, __LINE__);
+			return PrintOffendingLine(
+							"\r\n%s %zu %s %u %s %zu\r\n%u\r\n",
+							"Error expecting",
+							pmesh->p_extra->smeshmateriallist.size(),
+							"materials got",
+							nmaterials,
+							"materials.\r\nMesh line number :",
+							linenumber,
+							__LINE__);
 		}
 		return GetNextToken('}');
 	}
@@ -778,7 +819,7 @@ namespace ns_HoLin
 			return TRUE;
 		return PrintOffendingLine(
 			"%s %zu\r\n%u\r\n",
-			"In GetMeshMaterialList. GetMeshMaterialListBody returned FALSE.\r\nMesh line number",
+			"In GetMeshMaterialList. GetMeshMaterialListBody returned FALSE.\r\nMesh line number :",
 			linenumber,
 			__LINE__
 		);
@@ -799,7 +840,7 @@ namespace ns_HoLin
 		else {
 			return PrintOffendingLine(
 				"\r\n%s %zu\r\n%u\r\n",
-				"Material template not named.\r\nMesh line number : ",
+				"Material template not named.\r\nMesh line number :",
 				linenumber,
 				__LINE__);
 		}
@@ -1093,7 +1134,7 @@ namespace ns_HoLin
 			return TRUE;
 		}
 		return PrintOffendingLine(
-			"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+			"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 			"Error expecting \';\', got",
 			sfile.GetCurrentCharToProcess(),
 			"Mesh line number :",
@@ -1125,7 +1166,7 @@ namespace ns_HoLin
 							number_of_entries,
 							"got",
 							(i + 1),
-							"Mesh line number : ",
+							"Mesh line number :",
 							linenumber,
 							__LINE__
 						);
@@ -1149,7 +1190,7 @@ namespace ns_HoLin
 			return TRUE;
 		
 		return PrintOffendingLine(
-					"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+					"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 					"Unexpected token",
 					sfile.GetCurrentCharToProcess(),
 					"Mesh line number :",
@@ -1409,8 +1450,9 @@ namespace ns_HoLin
 #endif
 
 		if (GetTemplateName(buff, blen)) {
-			if (GetSkinWeightsBody(buff, blen, p_mesh))
+			if (GetSkinWeightsBody(buff, blen, p_mesh)) {
 				return TRUE;
+			}
 		}
 		return PrintOffendingLine(NULL);
 	}
@@ -1480,7 +1522,8 @@ namespace ns_HoLin
 		}
 		if (!GetUnsignedInteger(buff, blen)) {
 			return this->PrintOffendingLine(
-					"\r\n%s %zu\r\n%u\r\n", "Error GetUnsignedInteger returned FALSE.\r\nMesh line number:",
+					"\r\n%s %zu\r\n%u\r\n",
+					"Error GetUnsignedInteger returned FALSE.\r\nMesh line number:",
 					linenumber,
 					__LINE__);
 		}
@@ -1525,7 +1568,11 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		else {
-			return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error, mesh memory not allocated.\r\nLine :", linenumber, __LINE__);
+			return PrintOffendingLine(
+						"\r\n%s %zu\r\n%u\r\n",
+						"Error, mesh memory not allocated.\r\nMesh line number :",
+						linenumber,
+						__LINE__);
 		}
 		return TRUE;
 	}
@@ -1550,7 +1597,13 @@ namespace ns_HoLin
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n", "Unexpected token", sfile.GetCurrentCharToProcess(), "Mesh line number :", linenumber, __LINE__);
+		return PrintOffendingLine(
+					"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
+					"Unexpected token",
+					sfile.GetCurrentCharToProcess(),
+					"Mesh line number :",
+					linenumber,
+					__LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshVertexColorsBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -1573,7 +1626,7 @@ namespace ns_HoLin
 		}
 		return PrintOffendingLine(
 					"\r\n%s %zu\r\n%u\r\n",
-					"Error number of colors and number of polygons do not match.\r\nLine :",
+					"Error number of colors and number of polygons do not match.\r\nMesh line number :",
 					linenumber,
 					__LINE__);
 	}
@@ -1719,7 +1772,7 @@ namespace ns_HoLin
 				if (sfile.GetEndOfFileStatus()) {
 					return PrintOffendingLine(
 								"\r\n%s %zu\r\n%u\r\n",
-								"Unexpected end of file. Possibly missing \'}\'\r\nMesh line number : ",
+								"Unexpected end of file. Possibly missing \'}\'.\r\nMesh line number :",
 								linenumber,
 								__LINE__);
 				}
@@ -1739,7 +1792,7 @@ namespace ns_HoLin
 						return TRUE;
 				}
 				return PrintOffendingLine(
-							"\r\n%s \'%s\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
 							"Error could not find material",
 							buff,
 							"Mesh line number :",
@@ -1748,7 +1801,7 @@ namespace ns_HoLin
 			}
 			else {
 				return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Error, unexpected token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -1910,7 +1963,7 @@ namespace ns_HoLin
 				}
 				else {
 					return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Encountered error. Unknown token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -1930,7 +1983,7 @@ namespace ns_HoLin
 			}
 		}
 		return PrintOffendingLine(
-					"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+					"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 					"Error unknown token",
 					sfile.GetCurrentCharToProcess(),
 					"Mesh line number :",
@@ -1993,7 +2046,7 @@ namespace ns_HoLin
 					continue;
 				else {
 					return PrintOffendingLine(
-								"\r\n%s %u %s %u\r\n%s %zu\r\n%u\r\n",
+								"\r\n%s %u %s %u.\r\n%s %zu\r\n%u\r\n",
 								"Error expecting",
 								number_of_entries,
 								"timed float keys, got",
@@ -2005,7 +2058,7 @@ namespace ns_HoLin
 			}
 			else {
 				return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Unexpected token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -2163,14 +2216,18 @@ namespace ns_HoLin
 				if (!GetName(buff, blen, '}'))
 					break;
 				if (strlen(buff) == 0) {
-					return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error no name entry.\r\nMesh line number :", linenumber, __LINE__);
+					return PrintOffendingLine(
+								"\r\n%s %zu\r\n%u\r\n",
+								"Error no name entry.\r\nMesh line number :",
+								linenumber,
+								__LINE__);
 				}
 				std::string s(buff);
 				
 				if (!xfiledata.sframeslist.FindFrames(s)) {
 					if (!xfiledata.smeshlist.Find(s)) {
 						return PrintOffendingLine(
-										"\r\n%s \'%s\'\r\n%s %zu\r\n%u\r\n",
+										"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
 										"Could not find object reference",
 										buff,
 										"Mesh line number :",
@@ -2189,7 +2246,11 @@ namespace ns_HoLin
 					ns_HoLin::sAnimation_Data *p_anim_data = p_animation->CreateAnimation_Data();
 
 					if (p_anim_data == nullptr) {
-						return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number :", linenumber, __LINE__);
+						return PrintOffendingLine(
+									"\r\n%s %zu\r\n%u\r\n",
+									"Unable to allocate memory.\r\nMesh line number :",
+									linenumber,
+									__LINE__);
 					}
 					if (!GetAnimationKey(buff, blen, p_anim_data))
 						return FALSE;
@@ -2200,7 +2261,7 @@ namespace ns_HoLin
 				}
 				else {
 					return PrintOffendingLine(
-								"\r\n%s \'%s\'\r\n%s %zu\r\n%u\r\n",
+								"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
 								"Unknown token",
 								buff,
 								"Mesh line number :",
@@ -2213,7 +2274,7 @@ namespace ns_HoLin
 			}
 			else {
 				return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Unknown token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -2234,10 +2295,8 @@ namespace ns_HoLin
 
 		buff[0] = '\0';
 		memset((void*)buff, 0, blen);
-		if (sfile.GetCurrentCharToProcess() != '{') {
-			if (!GetTemplateName(buff, blen)) {
-				return FALSE;
-			}
+		if (!GetTemplateName(buff, blen)) {
+			return FALSE;
 		}
 		if (strlen(buff) == 0) {
 			CreateName(buff, blen);
@@ -2247,7 +2306,7 @@ namespace ns_HoLin
 		if (sfile.GetCurrentCharToProcess() != '{') {
 			if (!GetNextToken('{')) {
 				return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Error unexpected token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -2262,7 +2321,11 @@ namespace ns_HoLin
 			p_animation = xfiledata.sanimationsetlist.CreateAnimation();
 		}
 		if (p_animation == nullptr) {
-			return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number : ", linenumber, __LINE__);
+			return PrintOffendingLine(
+						"\r\n%s %zu\r\n%u\r\n",
+						"Unable to allocate memory.\r\nMesh line number :",
+						linenumber,
+						__LINE__);
 		}
 		p_animation->name = std::move(name);
 		if (GetAnimationBody(buff, blen, p_animation))
@@ -2290,7 +2353,7 @@ namespace ns_HoLin
 				}
 				else {
 					return PrintOffendingLine(
-								"\r\n%s \'%s\'\r\n%s %zu\r\n%u\r\n",
+								"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
 								"Error expecting \'Animation\', but got",
 								buff,
 								"Mesh line number :",
@@ -2302,7 +2365,7 @@ namespace ns_HoLin
 				return TRUE;
 			else {
 				return PrintOffendingLine(
-							"\r\n%s \'%c\'\r\n%s %zu\r\n%u\r\n",
+							"\r\n%s \'%c\'.\r\n%s %zu\r\n%u\r\n",
 							"Unknown token",
 							sfile.GetCurrentCharToProcess(),
 							"Mesh line number :",
@@ -2336,7 +2399,7 @@ namespace ns_HoLin
 			pset->name = std::move(name);
 			return GetAnimationSetBody(buff, blen, pset);
 		}
-		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error allocating memory.\r\nMesh line number : ", linenumber, __LINE__);
+		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error allocating memory.\r\nMesh line number :", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetAnimTicksPerSecond(char *buff, std::size_t blen)
@@ -2370,7 +2433,7 @@ namespace ns_HoLin
 				return GetMesh(buff, blen, p_mesh);
 			}
 			else {
-				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number : ", linenumber, __LINE__);
+				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number :", linenumber, __LINE__);
 			}
 		}
 		else if (strcmp(buff, "Frame") == 0) {
@@ -2380,7 +2443,7 @@ namespace ns_HoLin
 				return GetFrame(buff, blen, pseq);
 			}
 			else {
-				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number : ", linenumber, __LINE__);
+				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unable to allocate memory.\r\nMesh line number :", linenumber, __LINE__);
 			}
 		}
 		else if (strcmp(buff, "Material") == 0) {
@@ -2403,7 +2466,13 @@ namespace ns_HoLin
 		else if (strcmp(buff, "Animation") == 0) {
 			return GetAnimation(buff, blen);
 		}
-		return PrintOffendingLine("\r\n%s \'%s\'\r\n%s %zu\r\n%u\r\n", "Unknown tempate", buff, "Mesh line number :", linenumber, __LINE__);
+		return PrintOffendingLine(
+					"\r\n%s \'%s\'.\r\n%s %zu\r\n%u\r\n",
+					"Unknown tempate",
+					buff,
+					"Mesh line number :",
+					linenumber,
+					__LINE__);
 	}
 
 	BOOL cTextXFileParser::VerifyToken(char token)
@@ -2421,8 +2490,15 @@ namespace ns_HoLin
 		}
 		if (sfile.GetCurrentCharToProcess() == token)
 			return TRUE;
-		return PrintOffendingLine("\r\n%s \'%c\' %s \'%c\'\r\n%s %zu\r\n%u\r\n",
-			"Error unexpected token", sfile.GetCurrentCharToProcess(), "expecting", token, "Mesh line number : ", linenumber, __LINE__);
+		return PrintOffendingLine(
+					"\r\n%s \'%c\' %s \'%c\'.\r\n%s %zu\r\n%u\r\n",
+					"Error unexpected token",
+					sfile.GetCurrentCharToProcess(),
+					"expecting",
+					token,
+					"Mesh line number :",
+					linenumber,
+					__LINE__);
 	}
 
 	BOOL cTextXFileParser::GetCarriageReturn()
@@ -2441,7 +2517,7 @@ namespace ns_HoLin
 			}
 		}
 		else {
-			return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unexpected end of file.\r\nMesh line number : ", linenumber, __LINE__);
+			return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unexpected end of file.\r\nMesh line number :", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -2469,7 +2545,7 @@ namespace ns_HoLin
 				break;
 			}
 		}
-		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error.\r\nMesh line number : ", linenumber, __LINE__);
+		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error.\r\nMesh line number :", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetComment()
@@ -2493,7 +2569,7 @@ namespace ns_HoLin
 					__LINE__);
 			}
 		}
-		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unexpected end of file.\r\nMesh line number : ", linenumber, __LINE__);
+		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unexpected end of file.\r\nMesh line number :", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetNextInput(std::function<BOOL(int)> func)
@@ -2501,14 +2577,18 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-
+		int ch = 0;
+		
 		while (TRUE) {
 			if (GetNextChar()) {
-				if (func((int)sfile.GetCurrentCharToProcess()))
-					return TRUE;
-				if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess()))
+				ch = sfile.GetCurrentCharToProcess();
+				if (IsWhiteSpace(this, ch)) {
 					continue;
-				else if (sfile.GetCurrentCharToProcess() == '/') {
+				}
+				if (func(ch)) {
+					return TRUE;
+				}
+				if (sfile.GetCurrentCharToProcess() == '/') {
 					if (GetComment())
 						continue;
 					else {
@@ -2533,12 +2613,16 @@ namespace ns_HoLin
 			}
 			else {
 				if (sfile.GetEndOfFileStatus()) {
-					return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Unexpected end of file error.\r\nMesh line number :", linenumber, __LINE__);
+					return PrintOffendingLine(
+							"\r\n%s %zu\r\n%u\r\n",
+							"Unexpected end of file error.\r\nMesh line number :",
+							linenumber,
+							__LINE__);
 				}
 				return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error.\r\nMesh line number :", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error.\r\nMesh line number :", linenumber, __LINE__);
+		return PrintOffendingLine(NULL);
 	}
 
 	BOOL cTextXFileParser::GetNextToken(const char token)
@@ -2623,7 +2707,7 @@ namespace ns_HoLin
 		if (serrormessages.b_has_error_msg_outputed)
 			return FALSE;
 		
-		char *pbuff = new char[sfile.GetPageSize()];
+		std::unique_ptr<char[]> pbuff(new char[sfile.GetPageSize()]);
 		va_list arg;
 		std::ofstream fout("Errorlog.txt");
 		DWORD bytes = 0;
@@ -2637,10 +2721,12 @@ namespace ns_HoLin
 		if (p_format ) {
 			va_start(arg, p_format);
 			if (pbuff) {
-				bytes = _vsprintf_p(pbuff, sfile.GetPageSize(), p_format, arg);
-				std::clog << pbuff;
+				bytes = _vsprintf_p(pbuff.get(), sfile.GetPageSize(), p_format, arg);
+				std::clog << pbuff.get();
+				MessageBoxA(nullptr, pbuff.get(), "Error", MB_OK);
 				std::clog << '\n' << before << " Error here " << after << '\n';
 			}
+			va_end(arg);
 		}
 		functioncalls.PrintHistoryLog();
 		std::clog.rdbuf(clogbuf);
@@ -2650,19 +2736,15 @@ namespace ns_HoLin
 #else
 		std::wcout << L"See file \'Errorlog.txt\' for more information.\n";
 #endif
-		if (pbuff) {
-			delete[] pbuff;
-			pbuff = NULL;
-		}
 		serrormessages.b_has_error_msg_outputed = TRUE;
 		return FALSE;
 	}
 	
 	BOOL IsWhiteSpace(ns_HoLin::cTextXFileParser *p, int ch)
 	{
-		if (ch == ' ' || ch == '\t' || ch == '\n')
+		if (ch == (int)' ' || ch == (int)'\t' || ch == (int)'\n')
 			return TRUE;
-		else if (ch == '\r') {
+		else if (ch == (int)'\r') {
 			if (p->GetNextChar()) {
 				if (p->sfile.GetCurrentCharToProcess() == '\n')
 					return TRUE;
@@ -2687,14 +2769,14 @@ namespace ns_HoLin
 
 	BOOL IsValidCharOpening(int ch)
 	{
-		if (std::isalpha(ch) || ch == '{' || ch == '_')
+		if (std::isalpha(ch) || ch == (int)'{' || ch == (int)'_' || ch == (int)'.' || ch == (int)'-')
 			return TRUE;
 		return FALSE;
 	}
 	
 	BOOL IsValidCharClosing(int ch)
 	{
-		if (isalpha(ch) || ch == '}')
+		if (std::isalpha(ch) || ch == (int)'}')
 			return TRUE;
 		return FALSE;
 	}

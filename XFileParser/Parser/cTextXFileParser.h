@@ -18,11 +18,15 @@
 #include <limits>
 #include <functional>
 #include <new>
+#include <memory>
 #include <cctype>
 #include <cstdarg>
 #include <fstream>
 
+#ifdef FUNCTIONCALLSTACK
 #include "Output.h"
+#endif
+
 #include "sFileIO.h"
 #include "sMeshList.h"
 #include "sMaterialList.h"

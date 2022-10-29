@@ -14,7 +14,11 @@
 #include <fstream>
 #include <cwchar>
 #include "cBaseWindow.h"
+
+#ifdef FUNCTIONCALLSTACK
 #include "Output.h"
+#endif
+
 #include "sMaterialList.h"
 #include "sFrameList.h"
 #include "sMeshList.h"

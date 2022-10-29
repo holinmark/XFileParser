@@ -55,7 +55,7 @@ namespace ns_HoLin
 			if (bytes_read_from_file == 0) {
 				hfile = nullptr;
 				endoffile = TRUE;
-				return FALSE;
+				throw(std::wstring(L"Unexpected end of file reached."));
 			}
 			file_buffer[bytes_read_from_file] = '\0';
 		}
