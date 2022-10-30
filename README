@@ -20,6 +20,8 @@ To use in Win32 mode just declare a variable type ns_HoLin::cXFile then call met
 TRUE if success. Then call method GetXFileType() for type of mesh file (TEXT_FILE, BINARY_FILE or ZIP_FILE). TEXT_FILE only
 supported at the moment. Then declare type ns_HoLin::cTextXFileParser pointer to receive text data.
 
+Example code:
+
 <code>
 ns_HoLin::cXFile file;
 

@@ -80,7 +80,9 @@ namespace ns_HoLin
 		int ret = 0;
 		HANDLE hfile = INVALID_HANDLE_VALUE;
 
+#ifdef FUNCTIONCALLSTACK
 		if (AllocConsole()) {
+#endif
 			if (this->Create(hInstance, (LPCWSTR)L"Windows Template", WS_OVERLAPPEDWINDOW, width, height, nCmdShow)) {
 				ShowWindow(this->m_hWnd, nCmdShow);
 				UpdateWindow(this->m_hWnd);
@@ -90,8 +92,10 @@ namespace ns_HoLin
 			this->Cleanup(hfile);
 			CloseHandle(hfile);
 			hfile = INVALID_HANDLE_VALUE;
+#ifdef FUNCTIONCALLSTACK
 			FreeConsole();
 		}
+#endif
 		return ret;
 	}
 
@@ -187,7 +191,10 @@ namespace ns_HoLin
 			hr = siResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 			if (SUCCEEDED(hr)) {
 				file_name = pszFilePath;
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s %s\r\n"), TEXT("File selected"), pszFilePath);
+#else
+#endif
 				CoTaskMemFree(pszFilePath);
 				return (HRESULT)S_OK;
 			}
@@ -205,16 +212,26 @@ namespace ns_HoLin
 			xfile.GetBinaryData()->needed_struct_file.output_header_to_file = show_headers;
 			if (xfile.ReadXFile(file_name.c_str(), FALSE, boverride)) {
 				if (xfile.GetXFileType() == TEXT_FILE) {
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
+#else
+					MessageBox(nullptr, L"Text file.", L"OK", MB_OK);
+#endif
 					PrintMesh(&(xfile.GetTextData()->xfiledata.smeshlist));
 					PrintFrames(xfile.GetTextData()->xfiledata.sframeslist.pfirstseq);
 				}
 				else if (xfile.GetXFileType() == BINARY_FILE) {
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
+#else
+					MessageBox(nullptr, L"Binary file.", L"OK", MB_OK);
+#endif
 				}
 			}
 			else {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
+#endif
 			}
 		}
 		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
@@ -302,11 +319,17 @@ namespace ns_HoLin
 	{
 		for (std::size_t row = 0; row < 4; ++row) {
 			for (std::size_t col = 0; col < 4; ++col) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%f, "), matrix.m[row][col]);
+#endif
 			}
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("%s"), "\r\n");
+#endif
 		}
+#ifdef FUNCTIONCALLSTACK
 		ns_HoLin::WriteToConsole(TEXT("%s"), "\r\n\r\n");
+#endif
 	}
 	
 	void PrintMaterials(std::vector<ns_HoLin::sMaterial> &materials, ns_HoLin::sMesh *p_mesh, const char *pstr)
@@ -314,6 +337,7 @@ namespace ns_HoLin
 		if (materials.size() > 0) {
 			std::clog << pstr << '\n';
 			for (std::size_t i = 0; i < materials.size(); ++i) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Material name: ", materials[i].name.c_str());
 
 				ns_HoLin::WriteToConsoleA("\t%s %f, %f, %f, %f\r\n",
@@ -329,14 +353,20 @@ namespace ns_HoLin
 					"Emmisive", materials[i].emissivecolor.x, materials[i].emissivecolor.y, materials[i].emissivecolor.z);
 					
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n\r\n", "File name: ", materials[i].filename.c_str());
+#endif
 			}
 		}
+#ifdef FUNCTIONCALLSTACK
 		ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 		while (p_mesh) {
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsoleA("%s %s\r\n", "Mesh name:", p_mesh->name.c_str());
+#endif
 			if (p_mesh->p_extra) {
 				for (std::size_t i = 0; i < p_mesh->p_extra->smeshmateriallist.size(); ++i) {
 					
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsoleA("\t%s %s\r\n",
 						"Material name:", p_mesh->p_extra->smeshmateriallist[i].name.c_str());
 					
@@ -363,6 +393,7 @@ namespace ns_HoLin
 					ns_HoLin::WriteToConsoleA("\t%s %s\r\n",
 						"File name:",
 						p_mesh->p_extra->smeshmateriallist[i].filename.c_str());
+#endif
 				}
 			}
 			p_mesh = p_mesh->pnextmesh;
@@ -374,9 +405,13 @@ namespace ns_HoLin
 		ns_HoLin::sMesh *pmesh = p_list_of_meshes->pfirstmesh;
 		
 		if (pmesh) {
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("%s %zu\r\n"), TEXT("Number of meshes"), p_list_of_meshes->number_of_meshes);
+#endif
 			while (pmesh) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Mesh", pmesh->name.c_str());
+#endif
 				if (pmesh->p_extra) {
 					if (pmesh->p_extra->p_skininfo) {
 						for (std::size_t i=0; i<pmesh->p_extra->p_skininfo->p_skin_weights.size(); ++i) {
@@ -399,7 +434,9 @@ namespace ns_HoLin
 			}
 		}
 		else {
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("%s\r\n\r\n"), TEXT("No mesh."));
+#endif
 		}
 	}
 	
@@ -409,53 +446,87 @@ namespace ns_HoLin
 			std::size_t index = 1;
 			ns_HoLin::sFrame *pframe;
 			
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("\r\n\r\n%s :\r\n"), TEXT("Frames"));
+#endif
 			while (pframeseq) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Keys in frame sequences."));
+#endif
 				for (auto n : pframeseq->framenames) {
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsoleA("%s, ", n.c_str());
+#endif
 				}
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 				pframe = pframeseq->pfirstframe;
 				while (pframe) {
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Frame : ", pframe->name.c_str());
-					if (pframe->parent_name.length() > 0)
+#endif
+					if (pframe->parent_name.length() > 0) {
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsoleA("\t\t%s %s\r\n", "Parent : ", pframe->parent_name.c_str());
-					else
+#endif
+					}
+					else {
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("\t\t%s\r\n"), TEXT("No parent"));
+#endif
+					}
 					if (!pframeseq->parent_children[pframe->name].empty()) {
 						
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(
 							TEXT("\t\t%s %zu :  "),
 							TEXT("Children"),
 							pframeseq->parent_children[pframe->name].size());
+#endif
 							
 						for (auto c : pframeseq->parent_children[pframe->name]) {
+#ifdef FUNCTIONCALLSTACK
 							ns_HoLin::WriteToConsoleA("%s, ", c.c_str());
+#endif
 						}
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 					}
 					if (pframe->mesh.size() > 0) {
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Meshes"));
+#endif
 						for (auto m : pframe->mesh) {
+#ifdef FUNCTIONCALLSTACK
 							ns_HoLin::WriteToConsoleA("%s, ", m.c_str());
+#endif
 						}
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 					}
 					pframe = pframe->pnextframe;
 				}
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 				pframeseq = pframeseq->pnextseq;
 			}
 		}
 		else {
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("%s\r\n\r\n"), TEXT("No frames."));
+#endif
 		}
 	}
 	
 	void PrintAnimationSet(ns_HoLin::sAnimationSetList *psetlist)
 	{
+#ifdef FUNCTIONCALLSTACK
 		ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("\nAnimation data :"));
+#endif
 		if (psetlist) {
 			ns_HoLin::sAnimationSet *p_anim_set = psetlist->pfirst_set;
 			ns_HoLin::sAnimation *p_anim = nullptr;
@@ -464,34 +535,48 @@ namespace ns_HoLin
 	
 			p_anim = psetlist->pfirst_animation;
 			while (p_anim) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Animation", p_anim->name.c_str());
+#endif
 				p_anim = p_anim->pnextanimation;
 			}
 			p_anim_set = psetlist->pfirst_set;
 			while (p_anim_set) {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Animation set", p_anim_set->name.c_str());
+#endif
 				p_anim = p_anim_set->pfirstanimation;
 				while (p_anim) {
 					number_of_animations++;
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsoleA("\t\t%s %s\r\n", "Animation", p_anim->name.c_str());
+#endif
 					p = p_anim->pfirst_data;
 					while (p) {
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("\t\t\t%s %u\r\n"), TEXT("Transform type"), p->type_of_transform);
+#endif
 						for (DWORD i = 0; i < p->transformation_data.size(); ++i) {
 							ns_HoLin::WriteToConsole(TEXT("%u : "), p->transformation_data[i].time);
 							for (DWORD j = 0; j < p->transformation_data[i].tfkeys.size(); ++j) {
 								ns_HoLin::WriteToConsole(TEXT("%f, "), p->transformation_data[i].tfkeys[j]);
 							}
+#ifdef FUNCTIONCALLSTACK
 							ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 						}
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
+#endif
 						p = p->pnextanimation_data;
 					}
 					p_anim = p_anim->pnextanimation;
 				}
 				p_anim_set = p_anim_set->pnext_set;
 			}
+#ifdef FUNCTIONCALLSTACK
 			ns_HoLin::WriteToConsole(TEXT("\r\n%s %zu\r\n"), TEXT("Number of animations"), number_of_animations);
+#endif
 		}
 	}
 	
@@ -501,11 +586,15 @@ namespace ns_HoLin
 			ns_HoLin::WriteToConsoleA("%s\r\n", p_mesh->name.c_str());
 			if (p_mesh->p_extra) {
 				for (auto i : p_mesh->p_extra->sduplicates.Indices) {
+#ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsole(TEXT("%u, "), i);
+#endif
 				}
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(
 					TEXT("\r\n%zu %zu\r\n\r\n"),
 					p_mesh->p_extra->sduplicates.nIndices, p_mesh->p_extra->sduplicates.nOriginalVertices);
+#endif
 			}
 			p_mesh = p_mesh->pnextmesh;
 		}
@@ -513,6 +602,7 @@ namespace ns_HoLin
 	
 	void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 	{
+#ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sAnimationSetList *pset = &p_xfile->xfiledata.sanimationsetlist;
 	
 		PrintMesh(&p_xfile->xfiledata.smeshlist);
@@ -520,5 +610,6 @@ namespace ns_HoLin
 		PrintMaterials(p_xfile->xfiledata.smateriallist, p_xfile->xfiledata.smeshlist.pfirstmesh, "Global materials");
 		//PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
 		//PrintDuplicates(p_xfile->xfiledata.smeshlist.pfirstmesh);
+#endif
 	}
 }

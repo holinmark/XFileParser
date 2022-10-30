@@ -2722,13 +2722,14 @@ namespace ns_HoLin
 			va_start(arg, p_format);
 			if (pbuff) {
 				bytes = _vsprintf_p(pbuff.get(), sfile.GetPageSize(), p_format, arg);
-				std::clog << pbuff.get();
-				MessageBoxA(nullptr, pbuff.get(), "Error", MB_OK);
+				std::clog << '\n' << pbuff.get();
 				std::clog << '\n' << before << " Error here " << after << '\n';
 			}
 			va_end(arg);
 		}
+#ifdef FUNCTIONCALLSTACK
 		functioncalls.PrintHistoryLog();
+#endif
 		std::clog.rdbuf(clogbuf);
 		fout.close();
 #ifdef _WINDOWS

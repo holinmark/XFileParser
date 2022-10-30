@@ -48,7 +48,11 @@ namespace ns_HoLin
 		this->hfile = CreateFile(file_name, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 		if (this->hfile != INVALID_HANDLE_VALUE)
 			return true;
+#ifdef FUNCTIONCALLSTACK
 		ns_HoLin::WriteToConsole(L"%s \'%s\'\r\n", L"Error couldn\'t locate file", file_name);
+#else
+		MessageBox(nullptr, L"Error couldn\'t locate mesh file.", L"Error", MB_OK);
+#endif
 		this->hfile = nullptr;
 		return false;
 	}
@@ -90,7 +94,11 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_MAGIC:
 						break;
 					default:
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(L"%s\r\n", L"Error not an x file.");
+#else
+						MessageBox(nullptr, L"Error not an x file.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					}
 				}
@@ -99,7 +107,11 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_VERSION:
 						break;
 					default:
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(L"%s\r\n", L"Error unknown version.\r\nOnly version 0303 supported.");
+#else
+						MessageBox(nullptr, L"Error unknown version.\r\nOnly version 0303 supported.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					}
 				}
@@ -111,16 +123,28 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_BINARY:
 						file_type = BINARY_FILE;
 						if (!boverride_binary_error) {
+#ifdef FUNCTIONCALLSTACK
 							ns_HoLin::WriteToConsole(L"%s\r\n", L"Error binary version not supported.");
+#else
+							MessageBox(nullptr, L"Error binary version not supported.", L"Error", MB_OK);
+#endif
 							return FALSE;
 						}
 						break;
 					case XOFFILE_FORMAT_COMPRESSED:
 						file_type = ZIP_FILE;
-						ns_HoLin::WriteToConsole(L"%s\r\n", "Error can't read compressed file.");
+#ifdef FUNCTIONCALLSTACK
+						ns_HoLin::WriteToConsole(L"%s\r\n", L"Error can't read compressed file.");
+#else
+						MessageBox(nullptr, L"Error can't read compressed file.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					default:
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(L"%s\r\n", L"Header error, unknown file format.");
+#else
+						MessageBox(nullptr, L"Header error, unknown file format.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					}
 				}
@@ -131,16 +155,28 @@ namespace ns_HoLin
 						break;
 					case XOFFILE_FORMAT_FLOAT_BITS_64:
 						floatsize = 64;
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(L"%s\r\n", L"Error 64 bit float not supported at this time.");
+#else
+						MessageBox(nullptr, L"Error 64 bit float not supported at this time.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					default:
+#ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(L"%s\r\n", L"Error unknown float size.");
+#else
+						MessageBox(nullptr, L"Error unknown float size.", L"Error", MB_OK);
+#endif
 						return FALSE;
 					}
 				}
 			}
 			else {
+#ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(L"%s\r\n", L"Error unable to read X file header.");
+#else
+				MessageBox(nullptr, L"Error unable to read X file header.", L"Error", MB_OK);
+#endif
 				return FALSE;
 			}
 		}

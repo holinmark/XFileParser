@@ -46,10 +46,7 @@
 #include <any>
 #include <memory>
 #include <stdexcept>
-
-#ifdef FUNCTIONCALLSTACK
 #include "Output.h"
-#endif
 
 namespace ns_HoLin
 {
