@@ -6,8 +6,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.b
-*.x
 *.exe
 Errorlog.txt
 Cleanup.txt

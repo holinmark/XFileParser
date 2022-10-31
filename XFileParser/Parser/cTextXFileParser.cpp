@@ -134,6 +134,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
 		int ch = 0;
+		std::size_t limit = blen - 2, i = 1;
 
 		buff[0] = '\0';
 		if (sfile.GetCurrentCharToProcess() == (int)'{') {
@@ -146,67 +147,50 @@ namespace ns_HoLin
 		if (ch == (int)'{') {
 			return TRUE;
 		}
-		if (ch == (int)'_' || std::isalpha(ch) || ch == (int)'.' || ch == (int)'-') {
-			std::size_t limit = blen - 2, i = 1;
-			
-			buff[0] = static_cast<char>(ch);
-			buff[1] = '\0';
-			while(TRUE) {
-				if (i == limit) {
-					return PrintOffendingLine(
-							"\r\n%s %zu\r\n%u\r\n",
-							"Error maximum string length reached.\r\nMesh line number:",
-							linenumber,
-							__LINE__);
-				}
-				if (!GetNextChar()) {
-					return FALSE;
-				}
-				ch = static_cast<int>(sfile.GetCurrentCharToProcess());
-				if (ch == (int)' ' || ch == (int)'\n') {
-					if (GetNextToken('{')) {
-						return TRUE;
-					}
-					else {
-						break;
-					}
-				}
-				else if (ch == (int)'\r') {
-					return this->GetCarriageReturn();
-				}
-				else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
-					buff[i++] = static_cast<char>(ch);
-					buff[i] = '\0';
-				}
-				else if (ch == (int)'{') {
+		buff[0] = static_cast<char>(ch);
+		buff[1] = '\0';
+		while(TRUE) {
+			if (i == limit) {
+				return PrintOffendingLine(
+						"\r\n%s %zu\r\n%u\r\n",
+						"Error maximum string length reached.\r\nMesh line number:",
+						linenumber,
+						__LINE__);
+			}
+			if (!GetNextChar()) {
+				return FALSE;
+			}
+			ch = static_cast<int>(sfile.GetCurrentCharToProcess());
+			if (ch == (int)' ' || ch == (int)'\n') {
+				if (GetNextToken('{')) {
 					return TRUE;
 				}
 				else {
-					
-					return PrintOffendingLine(
-						"\r\n%s \'%c\' %s \'{\'\r\n%s %zu\r\n%u\r\n",
-						"Error unexpected token",
-						static_cast<char>(ch),
-						"expecting",
-						"Mesh line number :",
-						linenumber,
-						__LINE__);
-						
+					break;
 				}
 			}
-			return PrintOffendingLine(
-						"\r\n%s %zu\r\n%u\r\n",
-						"Error buffer overload.\r\nMesh line number :",
-						linenumber,
-						__LINE__);
-		}
-		else {
-			return this->PrintOffendingLine(
-							"\r\n%s.\r\n%s %zu\r\n%u\r\n",
-							"Error unexpected character",
-							"Mesh line number:",
-							linenumber,
-							__LINE__);
+			else if (ch == (int)'\r') {
+				return this->GetCarriageReturn();
+			}
+			else if (std::isalpha(ch) || std::isdigit(ch) || ch == (int)'.' || ch == (int)'_' || ch == (int)'\'' || ch == (int)'-') {
+				buff[i++] = static_cast<char>(ch);
+				buff[i] = '\0';
+			}
+			else if (ch == (int)'{') {
+				return TRUE;
+			}
+			else {
+				
+				return PrintOffendingLine(
+					"\r\n%s \'%c\' %s \'{\'\r\n%s %zu\r\n%u\r\n",
+					"Error unexpected token",
+					static_cast<char>(ch),
+					"expecting",
+					"Mesh line number :",
+					linenumber,
+					__LINE__);
+					
+			}
 		}
 		return this->PrintOffendingLine(NULL);
 	}
@@ -852,16 +836,19 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
 #endif
-		std::size_t limit = blen - 2;
+		std::size_t limit = blen - 2, i = 1;
 		
 		if (!GetDigit(buff, blen))
 			return FALSE;
 		buff[0] = sfile.GetCurrentCharToProcess();
 		buff[1] = '\0';
-		for (std::size_t i = 1; i < blen; ++i) {
+		while (TRUE) {
+			if (i >= limit) {
+				break;
+			}
 			if (GetNextChar()) {
 				if (isdigit(sfile.GetCurrentCharToProcess())) {
-					buff[i] = sfile.GetCurrentCharToProcess();
+					buff[++i] = sfile.GetCurrentCharToProcess();
 					buff[i + 1] = '\0';
 				}
 				else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
@@ -2786,7 +2773,7 @@ namespace ns_HoLin
 	{
 		char name[L_tmpnam_s];
 		errno_t err = 0;
-		std::size_t len = 0, temppathlength = 0, index = 0;
+		std::size_t temppathlength = 0;
 
 		GetTempPathA((DWORD)blen, buff);
 		temppathlength = strlen(buff);

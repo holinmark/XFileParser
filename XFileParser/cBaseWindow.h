@@ -36,11 +36,11 @@ namespace ns_HoLin
 			else if (msg == WM_CREATE) {
 				p_derived = reinterpret_cast<Derived*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 				if (p_derived) {
-					if (p_derived->CreateInterface(lp)) {
-						return 0;
+					if (p_derived->CreateInterface(wp, lp)) {
+						return (LRESULT)0;
 					}
 				}
-				return -1;
+				return(LRESULT)-1;
 			}
 			if (!p_derived) {
 				p_derived = reinterpret_cast<Derived*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -52,7 +52,9 @@ namespace ns_HoLin
 		}
 
 	protected:
+		virtual void SetWindowHandle(HWND) = 0;
 		virtual PCWSTR ClassName() const = 0;
+		virtual BOOL CreateInterface(WPARAM, LPARAM) = 0;
 		virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM) = 0;
 	};
 }

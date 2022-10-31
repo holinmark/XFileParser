@@ -158,12 +158,12 @@ namespace ns_HoLin
 		}
 	}
 
-	sAnimation* sAnimationSet::SearchForAnimation(std::string_view name)
+	sAnimation* sAnimationSet::SearchForAnimation(std::string_view find_name)
 	{
 		if (pfirstanimation) {
 			sAnimation *p = pfirstanimation;
 			while (p) {
-				if (p->name == name)
+				if (p->name == find_name)
 					return p;
 				p = p->pnextanimation;
 			}

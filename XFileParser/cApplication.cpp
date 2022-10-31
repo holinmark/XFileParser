@@ -17,7 +17,7 @@ namespace ns_HoLin
 	{
 	}
 	
-	BOOL cApplication::CreateInterface(LPARAM lp)
+	BOOL cApplication::CreateInterface(WPARAM wp, LPARAM lp)
 	{
 		LPCREATESTRUCT p_cs = (LPCREATESTRUCT)lp;
 		RECT r;
@@ -122,7 +122,7 @@ namespace ns_HoLin
 		case WM_COMMAND:
 			switch (LOWORD(wP)) {
 			case ID_BUTTONSELECTFILE:
-				return this->GetFileName();
+				return this->GetFileName((HWND)lP);
 			case ID_BUTTONSHOWHEADER:
 				SetFocus(this->m_hWnd);
 				return 0;
@@ -136,9 +136,14 @@ namespace ns_HoLin
 			HDC hdc = BeginPaint(this->m_hWnd, &ps);
 			// TODO: Add any drawing code that uses hdc here...
 			EndPaint(this->m_hWnd, &ps);
+			return 0;
 		}
-		return 0;
+		case READMESHFILEFINISHED:
+			return this->ThreadCleanup(wP, lP);
 		case WM_CLOSE:
+			if (InSendMessage()) {
+				ReplyMessage(0);
+			}
 			DestroyWindow(this->m_hWnd);
 			return 0;
 		case WM_DESTROY:
@@ -202,39 +207,110 @@ namespace ns_HoLin
 		return hr;
 	}
 	
-	int cApplication::GetFileName(BOOL boverride, BOOL show_headers)
+	int cApplication::GetFileName(HWND hWnd_button, BOOL boverride, BOOL show_headers)
 	{
 		std::wstring file_name;
+		std::thread thread_read_file;
 		HANDLE hfile = INVALID_HANDLE_VALUE;
-		ns_HoLin::cXFile xfile;
+		LARGE_INTEGER file_size{0};
 		
 		if (SUCCEEDED(this->DirectoryDialog(file_name))) {
-			xfile.GetBinaryData()->needed_struct_file.output_header_to_file = show_headers;
-			if (xfile.ReadXFile(file_name.c_str(), FALSE, boverride)) {
-				if (xfile.GetXFileType() == TEXT_FILE) {
+			if ((hfile = CreateFile(file_name.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)) == INVALID_HANDLE_VALUE) {
 #ifdef FUNCTIONCALLSTACK
-					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
+					ns_HoLin::WriteToConsole(TEXT("%s \'%s\'.\r\n"), TEXT("Error unable to open file"));
 #else
-					MessageBox(nullptr, L"Text file.", L"OK", MB_OK);
+					MessageBox(nullptr, L"Error unable to open mesh file.", L"Error!", MB_OK);
 #endif
-					PrintMesh(&(xfile.GetTextData()->xfiledata.smeshlist));
-					PrintFrames(xfile.GetTextData()->xfiledata.sframeslist.pfirstseq);
-				}
-				else if (xfile.GetXFileType() == BINARY_FILE) {
-#ifdef FUNCTIONCALLSTACK
-					ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
-#else
-					MessageBox(nullptr, L"Binary file.", L"OK", MB_OK);
-#endif
-				}
+				return 0;
+			}
+			if (!GetFileSizeEx(hfile, &file_size)) {
+				CloseHandle(hfile);
+				return 0;
+			}
+			CloseHandle(hfile);
+			if (hWnd_button) {
+				EnableWindow(hWnd_button, FALSE);
 			}
 			else {
-#ifdef FUNCTIONCALLSTACK
-				ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
-#endif
+				EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), FALSE);
 			}
+			xfile.GetBinaryData()->needed_struct_file.output_header_to_file = show_headers;
+			
+			std::packaged_task<BOOL()> pk(std::bind(&cApplication::ReadMeshFileWorkFunction, &*this, file_name, static_cast<ULONGLONG>(file_size.QuadPart), boverride));
+			std::thread thread_read_file(std::move(pk));
+			
+			if (thread_read_file.joinable()) {
+				worker_thread = std::move(thread_read_file);
+				return 0;
+			}
+			EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), TRUE);
 		}
 		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
+		return 0;
+	}
+	
+	BOOL cApplication::ReadMeshFileWorkFunction(std::wstring file_name, ULONGLONG file_size, BOOL boverride)
+	{
+		ns_HoLin::cXFile *p_xfile = new ns_HoLin::cXFile();
+		BOOL *p_result = new BOOL(FALSE);
+		
+		if (file_size < 150000) {
+			// sleep thread to give main thread time to finish before any PostMessage is sent
+			Sleep(100);
+		}
+		if (!p_xfile) {
+			PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)0, (LPARAM)0);
+			return FALSE;
+		}
+		if (!p_result) {
+			delete p_xfile;
+			p_xfile = nullptr;
+			PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)0, (LPARAM)0);
+			return FALSE;
+		}
+		if (xfile.ReadXFile(file_name.c_str(), FALSE, boverride)) {
+			if (xfile.GetXFileType() == TEXT_FILE) {
+				*p_result = TRUE;
+#ifdef FUNCTIONCALLSTACK
+				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
+#else
+				MessageBox(nullptr, L"Text file.", L"OK", MB_OK);
+#endif
+				PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
+				return TRUE;
+			}
+			else if (xfile.GetXFileType() == BINARY_FILE) {
+#ifdef FUNCTIONCALLSTACK
+				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
+#else
+				MessageBox(nullptr, L"Binary file.", L"OK", MB_OK);
+#endif
+				PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
+				return TRUE;
+			}
+		}
+		else {
+#ifdef FUNCTIONCALLSTACK
+			ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
+#endif
+		}
+		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
+		PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
+		return FALSE;
+	}
+	
+	int cApplication::ThreadCleanup(WPARAM wp, LPARAM lp)
+	{
+		worker_thread.join();
+		EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), TRUE);
+		if (wp) {
+			ns_HoLin::cXFile *p = (ns_HoLin::cXFile*)wp;
+			delete p;
+		}
+		if (lp) {
+			BOOL *p = (BOOL*)lp;
+			delete p;
+		}
 		return 0;
 	}
 	
@@ -244,9 +320,12 @@ namespace ns_HoLin
 		case 0x4F: // O
 			SetFocus(this->m_hWnd);
 			if (SendMessage(GetDlgItem(this->m_hWnd, ID_BUTTONSHOWHEADER), BM_GETCHECK, 0, 0) == BST_CHECKED) {
-				return this->GetFileName(TRUE, TRUE);
+				return this->GetFileName(nullptr, TRUE, TRUE);
 			}
-			return this->GetFileName(TRUE);
+			return this->GetFileName(nullptr, TRUE);
+		case VK_ESCAPE:
+			PostMessage(this->m_hWnd, WM_CLOSE, 0, 0);
+			break;
 		}
 		return 0;
 	}
@@ -264,7 +343,7 @@ namespace ns_HoLin
 		wcex.hInstance = hInstance;
 		wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSTEMPLATE));
 		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.hbrBackground = (HBRUSH)GetSysColorBrush(COLOR_BTNFACE);
 		wcex.lpszMenuName = nullptr;
 		wcex.lpszClassName = (LPCTSTR)this->ClassName();
 		wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));

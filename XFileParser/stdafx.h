@@ -29,6 +29,8 @@
 #include <cctype>
 #include <stdexcept>
 #include <exception>
+#include <future>
+#include <thread>
 
 #include "Resource.h"
 #include "Output.h"
