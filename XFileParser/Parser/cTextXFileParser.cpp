@@ -683,22 +683,6 @@ namespace ns_HoLin
 		return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error GetMaterialBody. Mesh line number :", linenumber, __LINE__);
 	}
 
-	BOOL cTextXFileParser::GetUnsignedInteger(char *buff, std::size_t blen, void *plist)
-	{
-		// This function is shared by GetSkinWeightsBody
-#ifdef FUNCTIONCALLSTACK
-		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
-#endif
-
-		if (!GetUnsignedInteger(buff, blen))
-			return FALSE;
-
-		DWORD d = (DWORD)atoi(buff);
-
-		((std::vector<DWORD>*)plist)->emplace_back(d);
-		return TRUE;
-	}
-
 	BOOL cTextXFileParser::GetMeshMaterialListAttributes(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
 	{
 #ifdef FUNCTIONCALLSTACK
@@ -831,6 +815,22 @@ namespace ns_HoLin
 		return GetMaterialBody(buff, blen, p_material);
 	}
 
+	BOOL cTextXFileParser::GetUnsignedInteger(char *buff, std::size_t blen, void *plist)
+	{
+		// This function is shared by GetSkinWeightsBody
+#ifdef FUNCTIONCALLSTACK
+		ns_HoLin::sFunctionCallHistory currentfunction(__func__);
+#endif
+
+		if (!GetUnsignedInteger(buff, blen))
+			return FALSE;
+
+		DWORD d = (DWORD)atoi(buff);
+
+		((std::vector<DWORD>*)plist)->emplace_back(d);
+		return TRUE;
+	}
+
 	BOOL cTextXFileParser::GetUnsignedInteger(char *buff, std::size_t blen, BOOL getnexttoken)
 	{
 #ifdef FUNCTIONCALLSTACK
@@ -840,16 +840,16 @@ namespace ns_HoLin
 		
 		if (!GetDigit(buff, blen))
 			return FALSE;
-		buff[0] = sfile.GetCurrentCharToProcess();
+		buff[0] = static_cast<char>(sfile.GetCurrentCharToProcess());
 		buff[1] = '\0';
 		while (TRUE) {
 			if (i >= limit) {
 				break;
 			}
 			if (GetNextChar()) {
-				if (isdigit(sfile.GetCurrentCharToProcess())) {
-					buff[++i] = sfile.GetCurrentCharToProcess();
-					buff[i + 1] = '\0';
+				if (std::isdigit(static_cast<int>(sfile.GetCurrentCharToProcess()))) {
+					buff[i++] = static_cast<char>(sfile.GetCurrentCharToProcess());
+					buff[i] = '\0';
 				}
 				else if (IsWhiteSpace(this, (int)sfile.GetCurrentCharToProcess())) {
 					return TRUE;
@@ -1501,7 +1501,7 @@ namespace ns_HoLin
 					linenumber,
 					__LINE__);
 		}
-		p_mesh->p_extra->sduplicates.nIndices = (DWORD)std::atoi(buff);
+		p_mesh->p_extra->sduplicates.nIndices = (DWORD)atoi(buff);
 		if (sfile.GetCurrentCharToProcess() != ';') {
 			if (!GetNextToken(';')) {
 				return FALSE;
@@ -1518,7 +1518,7 @@ namespace ns_HoLin
 			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		p_mesh->p_extra->sduplicates.nOriginalVertices = (DWORD)std::atoi(buff);
+		p_mesh->p_extra->sduplicates.nOriginalVertices = (DWORD)atoi(buff);
 		if (!GetArray(buff, blen, (void*)&p_mesh->p_extra->sduplicates.Indices, (DWORD)p_mesh->p_extra->sduplicates.nIndices, &cTextXFileParser::GetUnsignedInteger, FALSE))
 			return FALSE;
 		if (sfile.GetCurrentCharToProcess() == ';') {
@@ -1578,7 +1578,7 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		if (sfile.GetCurrentCharToProcess() == ';') {
-			c.index = (DWORD)std::atoi(buff);
+			c.index = (DWORD)atoi(buff);
 			if (GetColorRGBA(buff, blen, c.indexColor)) {
 				((std::vector<ns_HoLin::sIndexedColor>*)plist)->emplace_back(c);
 				return TRUE;
@@ -1604,7 +1604,7 @@ namespace ns_HoLin
 			return PrintOffendingLine("\r\n%s %zu\r\n%u\r\n", "Error no mesh declared.\r\nMesh line number :", linenumber, __LINE__);
 		if (!GetUnsignedInteger(buff, blen, ';'))
 			return FALSE;
-		nVertexColors = (DWORD)std::atoi(buff);
+		nVertexColors = (DWORD)atoi(buff);
 		if (pmesh->meshfaces.number_of_indices == nVertexColors) {
 			if (GetArray(buff, blen, (void*)&pmesh->p_extra->scolors.vertexColors, nVertexColors, &cTextXFileParser::GetIndexColor, FALSE)) {
 				return TRUE;
@@ -2122,11 +2122,21 @@ namespace ns_HoLin
 #endif
 
 		if (sfile.GetCurrentCharToProcess() != '{') {
-			if (!GetNextToken('{'))
+			if (!GetNextToken('{')) {
+#ifdef FUNCTIONCALLSTACK
+				return ns_HoLin::OutputError((wchar_t*)buff, (blen / 2), L"%s\r\n", L"Could not extract open brace.");
+#else
 				return FALSE;
+#endif
+			}
 		}
-		if (!GetAnimationKeyBody(buff, blen, p_anim_data))
+		if (!GetAnimationKeyBody(buff, blen, p_anim_data)) {
+#ifdef FUNCTIONCALLSTACK
+			return ns_HoLin::OutputError((wchar_t*)buff, (blen / 2), L"%s\r\n", L"GetAnimationKeyBody returned FALSE.");
+#else
 			return FALSE;
+#endif
+		}
 		if (sfile.GetCurrentCharToProcess() != '}') {
 			if (!GetNextToken('}')) {
 				return FALSE;
@@ -2147,7 +2157,7 @@ namespace ns_HoLin
 			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		DWORD openclosed = (DWORD)std::atoi(buff);
+		DWORD openclosed = (DWORD)atoi(buff);
 
 		if (openclosed > 1) {
 			return PrintOffendingLine(
@@ -2162,7 +2172,7 @@ namespace ns_HoLin
 			if (!GetNextToken(';'))
 				return FALSE;
 		}
-		DWORD positionquality = (DWORD)std::atoi(buff);
+		DWORD positionquality = (DWORD)atoi(buff);
 		if (positionquality > 1) {
 			return PrintOffendingLine(
 						"\r\n%s %zu\r\n%u\r\n",

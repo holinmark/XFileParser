@@ -87,9 +87,9 @@ namespace ns_HoLin
 		BOOL GetMaterialBody(char*, std::size_t, ns_HoLin::sMaterial*);
 		BOOL GetMeshMaterialListAttributes(char*, std::size_t, ns_HoLin::sMesh*);
 		BOOL GetMeshMaterialListBody(char*, std::size_t, ns_HoLin::sMesh*);
-		BOOL GetUnsignedInteger(char*, std::size_t, void*);
 		BOOL GetMeshMaterialList(char*, std::size_t, ns_HoLin::sMesh*);
 		BOOL GetMaterial(char*, std::size_t, ns_HoLin::sMaterial*);
+		BOOL GetUnsignedInteger(char*, std::size_t, void*);
 		BOOL GetUnsignedInteger(char*, std::size_t, BOOL = FALSE);
 		BOOL GetExponent(char*, std::size_t);
 		BOOL GetFraction(char*, std::size_t);
