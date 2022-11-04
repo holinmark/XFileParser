@@ -48,14 +48,14 @@ namespace ns_HoLin
 	protected:
 		HWND m_hWnd;
 		int client_width, client_height;
-		ns_HoLin::cXFile xfile;
 		std::thread worker_thread;
+		BOOL b_show_headers;
 
 		int MessageLoop();
 		HRESULT DirectoryDialog(std::wstring&);
 		int GetFileName(HWND, BOOL = FALSE, BOOL = FALSE);
 		int KeyPressed(WPARAM, LPARAM);
-		BOOL ReadMeshFileWorkFunction(std::wstring, ULONGLONG, BOOL = FALSE);
+		BOOL ReadMeshFileWorkFunction(std::wstring, ULONGLONG, DWORD, BOOL = FALSE);
 		int ThreadCleanup(WPARAM, LPARAM);
 		ATOM MyRegisterClass(HINSTANCE);
 		BOOL Create(HINSTANCE, LPCWSTR, DWORD, int, int, int);

@@ -6,6 +6,7 @@ namespace ns_HoLin
 	{
 		m_hWnd = nullptr;
 		client_width = client_height = 0;
+		b_show_headers = FALSE;
 	}
 
 	cApplication::~cApplication()
@@ -15,6 +16,8 @@ namespace ns_HoLin
 
 	void cApplication::Cleanup(HANDLE hfile)
 	{
+		b_show_headers = FALSE;
+		client_width = client_height = 0;
 	}
 	
 	BOOL cApplication::CreateInterface(WPARAM wp, LPARAM lp)
@@ -124,6 +127,7 @@ namespace ns_HoLin
 			case ID_BUTTONSELECTFILE:
 				return this->GetFileName((HWND)lP);
 			case ID_BUTTONSHOWHEADER:
+				b_show_headers = TRUE;
 				SetFocus(this->m_hWnd);
 				return 0;
 			}
@@ -213,6 +217,7 @@ namespace ns_HoLin
 		std::thread thread_read_file;
 		HANDLE hfile = INVALID_HANDLE_VALUE;
 		LARGE_INTEGER file_size{0};
+		DWORD check_state = 0;
 		
 		if (SUCCEEDED(this->DirectoryDialog(file_name))) {
 			if ((hfile = CreateFile(file_name.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)) == INVALID_HANDLE_VALUE) {
@@ -234,9 +239,9 @@ namespace ns_HoLin
 			else {
 				EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), FALSE);
 			}
-			xfile.GetBinaryData()->needed_struct_file.output_header_to_file = show_headers;
-			
-			std::packaged_task<BOOL()> pk(std::bind(&cApplication::ReadMeshFileWorkFunction, &*this, file_name, static_cast<ULONGLONG>(file_size.QuadPart), boverride));
+			check_state = (DWORD)SendMessage(GetDlgItem(this->m_hWnd, ID_BUTTONSHOWHEADER), BM_GETCHECK, 0, 0);
+
+			std::packaged_task<BOOL()> pk(std::bind(&cApplication::ReadMeshFileWorkFunction, &*this, file_name, static_cast<ULONGLONG>(file_size.QuadPart), check_state, boverride));
 			std::thread thread_read_file(std::move(pk));
 			
 			if (thread_read_file.joinable()) {
@@ -245,11 +250,10 @@ namespace ns_HoLin
 			}
 			EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), TRUE);
 		}
-		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
 		return 0;
 	}
 	
-	BOOL cApplication::ReadMeshFileWorkFunction(std::wstring file_name, ULONGLONG file_size, BOOL boverride)
+	BOOL cApplication::ReadMeshFileWorkFunction(std::wstring file_name, ULONGLONG file_size, DWORD check_state, BOOL boverride)
 	{
 		ns_HoLin::cXFile *p_xfile = new ns_HoLin::cXFile();
 		BOOL *p_result = new BOOL(FALSE);
@@ -268,22 +272,36 @@ namespace ns_HoLin
 			PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)0, (LPARAM)0);
 			return FALSE;
 		}
-		if (xfile.ReadXFile(file_name.c_str(), FALSE, boverride)) {
-			if (xfile.GetXFileType() == TEXT_FILE) {
+		if (check_state == BST_CHECKED) {
+			p_xfile->GetBinaryData()->needed_struct_file.output_header_to_file = TRUE;
+		}
+		else {
+			p_xfile->GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
+		}
+		if (p_xfile->ReadXFile(file_name.c_str(), FALSE, boverride)) {
+			if (p_xfile->GetXFileType() == TEXT_FILE) {
 				*p_result = TRUE;
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Text file."));
 #else
-				MessageBox(nullptr, L"Text file.", L"OK", MB_OK);
+				MessageBox(nullptr, TEXT("Text file."), TEXT("OK"), MB_OK);
 #endif
 				PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
 				return TRUE;
 			}
-			else if (xfile.GetXFileType() == BINARY_FILE) {
+			else if (p_xfile->GetXFileType() == BINARY_FILE) {
+				ns_HoLin::cBinaryXFileParser *p_bin = p_xfile->GetBinaryData();
+				
+				if (check_state == BST_CHECKED) {
+					p_bin->needed_struct_file.output_header_to_file = TRUE;
+				}
+				else {
+					p_bin->needed_struct_file.output_header_to_file = FALSE;
+				}
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
 #else
-				MessageBox(nullptr, L"Binary file.", L"OK", MB_OK);
+				MessageBox(nullptr, TEXT("Binary file."), TEXT("OK"), MB_OK);
 #endif
 				PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
 				return TRUE;
@@ -294,7 +312,6 @@ namespace ns_HoLin
 			ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
 #endif
 		}
-		xfile.GetBinaryData()->needed_struct_file.output_header_to_file = FALSE;
 		PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
 		return FALSE;
 	}
@@ -305,6 +322,16 @@ namespace ns_HoLin
 		EnableWindow(GetDlgItem(this->m_hWnd, ID_BUTTONSELECTFILE), TRUE);
 		if (wp) {
 			ns_HoLin::cXFile *p = (ns_HoLin::cXFile*)wp;
+			if (p->GetXFileType() == TEXT_FILE) {
+				PrintMesh(&p->GetTextData()->xfiledata.smeshlist);
+			}
+			else if (p->GetXFileType() == BINARY_FILE) {
+				if (p->GetXFileType() == BINARY_FILE) {
+					if (p->GetBinaryData()->needed_struct_file.output_header_to_file) {
+						ns_HoLin::WriteToConsoleA("%s\r\n", p->GetBinaryData()->needed_struct_file.c_header_file.c_str());
+					}
+				}
+			}
 			delete p;
 		}
 		if (lp) {

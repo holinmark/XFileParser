@@ -56,7 +56,7 @@ namespace ns_HoLin
 		std::string c_header_file;
 		
 		sBinaryMeshHeaderFile() { output_header_to_file = FALSE; }
-		~sBinaryMeshHeaderFile() { output_header_to_file = FALSE; }
+		~sBinaryMeshHeaderFile() { output_header_to_file = FALSE; c_header_file.clear(); }
 		operator bool() { return (bool)output_header_to_file; }
 		bool operator !() { return (bool)!output_header_to_file; }
 	};
