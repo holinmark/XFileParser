@@ -49,7 +49,6 @@ namespace ns_HoLin
 		HWND m_hWnd;
 		int client_width, client_height;
 		std::thread worker_thread;
-		BOOL b_show_headers;
 
 		int MessageLoop();
 		HRESULT DirectoryDialog(std::wstring&);

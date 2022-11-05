@@ -6,7 +6,6 @@ namespace ns_HoLin
 	{
 		m_hWnd = nullptr;
 		client_width = client_height = 0;
-		b_show_headers = FALSE;
 	}
 
 	cApplication::~cApplication()
@@ -16,7 +15,6 @@ namespace ns_HoLin
 
 	void cApplication::Cleanup(HANDLE hfile)
 	{
-		b_show_headers = FALSE;
 		client_width = client_height = 0;
 	}
 	
@@ -127,7 +125,12 @@ namespace ns_HoLin
 			case ID_BUTTONSELECTFILE:
 				return this->GetFileName((HWND)lP);
 			case ID_BUTTONSHOWHEADER:
-				b_show_headers = TRUE;
+				if (SendMessage((HWND)lP, BM_GETCHECK, 0, 0) == BST_CHECKED) {
+					sBinaryMeshHeaderFile::output_header_to_file = TRUE;
+				}
+				else {
+					sBinaryMeshHeaderFile::output_header_to_file = FALSE;
+				}
 				SetFocus(this->m_hWnd);
 				return 0;
 			}
@@ -224,7 +227,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 					ns_HoLin::WriteToConsole(TEXT("%s \'%s\'.\r\n"), TEXT("Error unable to open file"));
 #else
-					MessageBox(nullptr, L"Error unable to open mesh file.", L"Error!", MB_OK);
+					MessageBoxW(nullptr, L"Error unable to open mesh file.", L"Error!", MB_OK);
 #endif
 				return 0;
 			}
@@ -290,14 +293,6 @@ namespace ns_HoLin
 				return TRUE;
 			}
 			else if (p_xfile->GetXFileType() == BINARY_FILE) {
-				ns_HoLin::cBinaryXFileParser *p_bin = p_xfile->GetBinaryData();
-				
-				if (check_state == BST_CHECKED) {
-					p_bin->needed_struct_file.output_header_to_file = TRUE;
-				}
-				else {
-					p_bin->needed_struct_file.output_header_to_file = FALSE;
-				}
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(TEXT("%s\r\n"), TEXT("Binary file."));
 #else
@@ -309,7 +304,7 @@ namespace ns_HoLin
 		}
 		else {
 #ifdef FUNCTIONCALLSTACK
-			ns_HoLin::WriteToConsole(TEXT("%s \'%s\' %s\r\n"), TEXT("Error reading"), file_name.c_str(), TEXT("file."));
+			ns_HoLin::WriteToConsole(L"%s \'%s\' %s\r\n", L"Error reading", file_name.c_str(), L"file.");
 #endif
 		}
 		PostMessage(this->m_hWnd, READMESHFILEFINISHED, (WPARAM)p_xfile, (LPARAM)p_result);
@@ -327,7 +322,7 @@ namespace ns_HoLin
 			}
 			else if (p->GetXFileType() == BINARY_FILE) {
 				if (p->GetXFileType() == BINARY_FILE) {
-					if (p->GetBinaryData()->needed_struct_file.output_header_to_file) {
+					if (p->GetBinaryData()->needed_struct_file) {
 						ns_HoLin::WriteToConsoleA("%s\r\n", p->GetBinaryData()->needed_struct_file.c_header_file.c_str());
 					}
 				}

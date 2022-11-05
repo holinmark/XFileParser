@@ -2,6 +2,8 @@
 
 namespace ns_HoLin
 {
+	BOOL sBinaryMeshHeaderFile::output_header_to_file(FALSE);
+	
 	cBinaryXFileParser::cBinaryXFileParser()
 	{
 	}

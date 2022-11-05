@@ -52,11 +52,11 @@ namespace ns_HoLin
 {
 	struct sBinaryMeshHeaderFile
 	{
-		BOOL output_header_to_file;
+		static BOOL output_header_to_file;
 		std::string c_header_file;
 		
-		sBinaryMeshHeaderFile() { output_header_to_file = FALSE; }
-		~sBinaryMeshHeaderFile() { output_header_to_file = FALSE; c_header_file.clear(); }
+		sBinaryMeshHeaderFile() { }
+		~sBinaryMeshHeaderFile() { c_header_file.clear(); }
 		operator bool() { return (bool)output_header_to_file; }
 		bool operator !() { return (bool)!output_header_to_file; }
 	};
