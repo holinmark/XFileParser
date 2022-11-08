@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning(disable : 4101)
+
 #ifndef CTEXTXFILEPARSER_H
 #define CTEXTXFILEPARSER_H
 
