@@ -148,16 +148,29 @@ namespace ns_HoLin
 		case READMESHFILEFINISHED:
 			return this->ThreadCleanup(wP, lP);
 		case WM_CLOSE:
-			if (InSendMessage()) {
-				ReplyMessage(0);
-			}
-			DestroyWindow(this->m_hWnd);
-			return 0;
+			return CloseWindowMessage();
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
 		}
 		return DefWindowProc(this->m_hWnd, msg, wP, lP);
+	}
+	
+	int cApplication::CloseWindowMessage()
+	{
+		if (InSendMessage()) {
+			ReplyMessage(0);
+		}
+		if (worker_thread.joinable()) {
+#ifdef FUNCTIONCALLSTACK
+			ns_HoLin::WriteToConsole(L"%s\r\n", L"Unable to exit because program is busy reading mesh file. Try again later.");
+#else
+			MessageBox(nullptr, L"Unable to exit because program is busy reading mesh file.\r\nTry again later.", L"Error", MB_OK);
+#endif
+			return 0;
+		}
+		DestroyWindow(this->m_hWnd);
+		return 0;
 	}
 	
 	HRESULT cApplication::DirectoryDialog(std::wstring &file_name)
@@ -511,26 +524,8 @@ namespace ns_HoLin
 #endif
 			while (pmesh) {
 #ifdef FUNCTIONCALLSTACK
-				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Mesh", pmesh->name.c_str());
+				ns_HoLin::WriteToConsoleA("\t%s %s: %zu\r\n", "Mesh", pmesh->name.c_str(), pmesh->vertices.size());
 #endif
-				if (pmesh->p_extra) {
-					if (pmesh->p_extra->p_skininfo) {
-						for (std::size_t i=0; i<pmesh->p_extra->p_skininfo->p_skin_weights.size(); ++i) {
-							
-							if (pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size() == pmesh->p_extra->p_skininfo->p_skin_weights[i].p_vertexIndices.size()) {
-								
-								for (std::size_t j=0; j<pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size(); ++j) {
-									/*
-									ns_HoLin::WriteToConsole(TEXT("%u%s%f\r\n"),
-										pmesh->p_extra->p_skininfo->p_skin_weights[i].p_vertexIndices[j],
-										TEXT(" : "),
-										pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights[j]);
-										*/
-								}
-							}
-						}
-					}
-				}
 				pmesh = pmesh->pnextmesh;
 			}
 		}

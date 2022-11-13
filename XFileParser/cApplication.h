@@ -51,6 +51,7 @@ namespace ns_HoLin
 		std::thread worker_thread;
 
 		int MessageLoop();
+		int CloseWindowMessage();
 		HRESULT DirectoryDialog(std::wstring&);
 		int GetFileName(HWND, BOOL = FALSE, BOOL = FALSE);
 		int KeyPressed(WPARAM, LPARAM);
