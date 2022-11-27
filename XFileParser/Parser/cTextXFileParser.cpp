@@ -1109,11 +1109,11 @@ namespace ns_HoLin
 		number_of_faces = (DWORD)atoi(buff);
 		if (!VerifyToken(';'))
 			return FALSE;
-		meshfaces.facevertexindices.reserve((std::size_t)number_of_faces);
-		if (!GetArray(buff, blen, (void*)&meshfaces.facevertexindices, number_of_faces, &cTextXFileParser::GetPolygons))
+		meshfaces.face_vertex_indices.reserve((std::size_t)number_of_faces);
+		if (!GetArray(buff, blen, (void*)&meshfaces.face_vertex_indices, number_of_faces, &cTextXFileParser::GetPolygons))
 			return FALSE;
 		if (sfile.GetCurrentCharToProcess() == ';') {
-			for (auto f : meshfaces.facevertexindices) {
+			for (auto f : meshfaces.face_vertex_indices) {
 				if (f.size() > 0)
 					number_of_indices += f.size();
 			}
@@ -1293,8 +1293,8 @@ namespace ns_HoLin
 		if (!VerifyToken(';'))
 			return FALSE;
 		number_of_face_indices = (DWORD)atoi(buff);
-		p_meshnormals->facenormals.reserve((std::size_t)number_of_face_indices);
-		return GetArray(buff, blen, (void*)&p_meshnormals->facenormals, number_of_face_indices, &cTextXFileParser::GetNormalFaceIndices);
+		p_meshnormals->face_normals.reserve((std::size_t)number_of_face_indices);
+		return GetArray(buff, blen, (void*)&p_meshnormals->face_normals, number_of_face_indices, &cTextXFileParser::GetNormalFaceIndices);
 	}
 
 	BOOL cTextXFileParser::GetMeshNormals(char *buff, std::size_t blen, ns_HoLin::sMeshNormals *p_meshnormals)
@@ -1501,7 +1501,7 @@ namespace ns_HoLin
 					linenumber,
 					__LINE__);
 		}
-		p_mesh->p_extra->sduplicates.nIndices = (DWORD)atoi(buff);
+		p_mesh->p_extra->sduplicates.number_of_indices = (DWORD)atoi(buff);
 		if (sfile.GetCurrentCharToProcess() != ';') {
 			if (!GetNextToken(';')) {
 				return FALSE;
@@ -1519,7 +1519,7 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		p_mesh->p_extra->sduplicates.nOriginalVertices = (DWORD)atoi(buff);
-		if (!GetArray(buff, blen, (void*)&p_mesh->p_extra->sduplicates.Indices, (DWORD)p_mesh->p_extra->sduplicates.nIndices, &cTextXFileParser::GetUnsignedInteger, FALSE))
+		if (!GetArray(buff, blen, (void*)&p_mesh->p_extra->sduplicates.Indices, (DWORD)p_mesh->p_extra->sduplicates.number_of_indices, &cTextXFileParser::GetUnsignedInteger, FALSE))
 			return FALSE;
 		if (sfile.GetCurrentCharToProcess() == ';') {
 			if (sfile.GetCurrentCharToProcess() != '}') {
@@ -1579,7 +1579,7 @@ namespace ns_HoLin
 		}
 		if (sfile.GetCurrentCharToProcess() == ';') {
 			c.index = (DWORD)atoi(buff);
-			if (GetColorRGBA(buff, blen, c.indexColor)) {
+			if (GetColorRGBA(buff, blen, c.index_color)) {
 				((std::vector<ns_HoLin::sIndexedColor>*)plist)->emplace_back(c);
 				return TRUE;
 			}
@@ -1606,7 +1606,7 @@ namespace ns_HoLin
 			return FALSE;
 		nVertexColors = (DWORD)atoi(buff);
 		if (pmesh->meshfaces.number_of_indices == nVertexColors) {
-			if (GetArray(buff, blen, (void*)&pmesh->p_extra->scolors.vertexColors, nVertexColors, &cTextXFileParser::GetIndexColor, FALSE)) {
+			if (GetArray(buff, blen, (void*)&pmesh->p_extra->scolors.vertex_colors, nVertexColors, &cTextXFileParser::GetIndexColor, FALSE)) {
 				return TRUE;
 			}
 			return FALSE;
@@ -2411,7 +2411,7 @@ namespace ns_HoLin
 		}
 		if (!GetUnsignedInteger(buff, blen))
 			return FALSE;
-		xfiledata.sanimationsetlist.animtickspersecond = (DWORD)atoi(buff);
+		xfiledata.sanimationsetlist.anim_ticks_per_second = (DWORD)atoi(buff);
 		if (!VerifyToken(';'))
 			return FALSE;
 		return GetNextToken('}');

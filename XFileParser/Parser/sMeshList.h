@@ -15,7 +15,7 @@ namespace ns_HoLin
 	struct sMeshFaces
 	{
 		DWORD number_of_indices;
-		std::vector<std::vector<DWORD>> facevertexindices;
+		std::vector<std::vector<DWORD>> face_vertex_indices;
 
 		sMeshFaces();
 		sMeshFaces(sMeshFaces&&) = delete;
@@ -29,7 +29,7 @@ namespace ns_HoLin
 	struct sMeshNormals
 	{
 		std::vector<DirectX::XMFLOAT3> normals;
-		std::vector<std::vector<DWORD>> facenormals;
+		std::vector<std::vector<DWORD>> face_normals;
 
 		sMeshNormals();
 		sMeshNormals(sMeshNormals&&) = delete;
@@ -43,9 +43,9 @@ namespace ns_HoLin
 	struct sIndexedColor
 	{
 		DWORD index;
-		DirectX::XMFLOAT4 indexColor; // x = r, y = g, z = b, w = a
+		DirectX::XMFLOAT4 index_color; // x = r, y = g, z = b, w = a
 
-		sIndexedColor() : index(0), indexColor(DirectX::XMFLOAT4(1, 1, 1, 1)) {}
+		sIndexedColor() : index(0), index_color(DirectX::XMFLOAT4(1, 1, 1, 1)) {}
 		sIndexedColor(sIndexedColor&&);
 		sIndexedColor(const sIndexedColor&);
 		sIndexedColor& operator=(sIndexedColor&&) = delete;
@@ -54,7 +54,7 @@ namespace ns_HoLin
 
 	struct sMeshVertexColors
 	{
-		std::vector<sIndexedColor> vertexColors;
+		std::vector<sIndexedColor> vertex_colors;
 		
 		sMeshVertexColors() {}
 		sMeshVertexColors(sMeshVertexColors&&) = delete;
@@ -67,7 +67,7 @@ namespace ns_HoLin
 
 	struct sVertexDuplicationIndices
 	{
-		std::size_t nIndices; // Number of vertex indices. This is the number of vertices in the mesh.
+		std::size_t number_of_indices; // Number of vertex indices. This is the number of vertices in the mesh.
 		std::size_t nOriginalVertices; // Number of vertices in the mesh before any duplication occurs.
 		std::vector<DWORD> Indices; /*The value indices[n] holds the vertex index that vertex[n]
 										  in the vertex array for the mesh would have had if no duplication had occurred.

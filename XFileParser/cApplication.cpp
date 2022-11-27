@@ -634,14 +634,14 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Animation", p_anim->name.c_str());
 #endif
-				p_anim = p_anim->pnextanimation;
+				p_anim = p_anim->pnext_animation;
 			}
 			p_anim_set = psetlist->pfirst_set;
 			while (p_anim_set) {
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsoleA("\t%s %s\r\n", "Animation set", p_anim_set->name.c_str());
 #endif
-				p_anim = p_anim_set->pfirstanimation;
+				p_anim = p_anim_set->pfirst_animation;
 				while (p_anim) {
 					number_of_animations++;
 #ifdef FUNCTIONCALLSTACK
@@ -664,9 +664,9 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 						ns_HoLin::WriteToConsole(TEXT("%s"), TEXT("\r\n"));
 #endif
-						p = p->pnextanimation_data;
+						p = p->pnext_animation_data;
 					}
-					p_anim = p_anim->pnextanimation;
+					p_anim = p_anim->pnext_animation;
 				}
 				p_anim_set = p_anim_set->pnext_set;
 			}
@@ -689,7 +689,7 @@ namespace ns_HoLin
 #ifdef FUNCTIONCALLSTACK
 				ns_HoLin::WriteToConsole(
 					TEXT("\r\n%zu %zu\r\n\r\n"),
-					p_mesh->p_extra->sduplicates.nIndices, p_mesh->p_extra->sduplicates.nOriginalVertices);
+					p_mesh->p_extra->sduplicates.number_of_indices, p_mesh->p_extra->sduplicates.nOriginalVertices);
 #endif
 			}
 			p_mesh = p_mesh->pnextmesh;

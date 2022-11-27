@@ -42,11 +42,11 @@
 #include "sFileIO.h"
 #include "sFunctionCallHistory.h"
 #include "sErrorMessageException.h"
+#include "Output.h"
 #include <string>
 #include <any>
 #include <memory>
 #include <stdexcept>
-#include "Output.h"
 
 namespace ns_HoLin
 {

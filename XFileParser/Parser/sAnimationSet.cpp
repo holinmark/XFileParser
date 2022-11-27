@@ -27,7 +27,7 @@ namespace ns_HoLin
 
 	sAnimation_Data::sAnimation_Data()
 	{
-		pnextanimation_data = nullptr;
+		pnext_animation_data = nullptr;
 	}
 
 	sAnimation_Data::~sAnimation_Data()
@@ -37,9 +37,9 @@ namespace ns_HoLin
 
 	void sAnimation_Data::Cleanup(HANDLE hfile)
 	{
-		if (pnextanimation_data) {
-			delete pnextanimation_data;
-			pnextanimation_data = nullptr;
+		if (pnext_animation_data) {
+			delete pnext_animation_data;
+			pnext_animation_data = nullptr;
 		}
 	}
 	
@@ -47,7 +47,7 @@ namespace ns_HoLin
 	{
 		pfirst_data = nullptr;
 		plast_data = nullptr;
-		pnextanimation = nullptr;
+		pnext_animation = nullptr;
 	}
 
 	sAnimation::~sAnimation()
@@ -64,9 +64,9 @@ namespace ns_HoLin
 			pfirst_data = nullptr;
 			plast_data = nullptr;
 		}
-		if (pnextanimation) {
-			delete pnextanimation;
-			pnextanimation = nullptr;
+		if (pnext_animation) {
+			delete pnext_animation;
+			pnext_animation = nullptr;
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace ns_HoLin
 
 		if (p) {
 			if (plast_data) {
-				plast_data->pnextanimation_data = p;
+				plast_data->pnext_animation_data = p;
 				plast_data = p;
 			}
 			else {
@@ -92,7 +92,7 @@ namespace ns_HoLin
 	void sAnimation::InsertAnimation_Data(sAnimation_Data *p)
 	{
 		if (plast_data) {
-			plast_data->pnextanimation_data = p;
+			plast_data->pnext_animation_data = p;
 			plast_data = p;
 		}
 		else {
@@ -100,11 +100,21 @@ namespace ns_HoLin
 			plast_data = p;
 		}
 	}
-
+	
+	BOOL sAnimation::SearchOwnerList(std::string_view name)
+	{
+		for (std::size_t i = 0; i < this->list_of_objects.size(); i++) {
+			if (name == this->list_of_objects[i]) {
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+	
 	sAnimationSet::sAnimationSet()
 	{
-		pfirstanimation = nullptr;
-		plastanimation = nullptr;
+		pfirst_animation = nullptr;
+		plast_animation = nullptr;
 		pnext_set = nullptr;
 	}
 
@@ -116,14 +126,14 @@ namespace ns_HoLin
 	void sAnimationSet::Cleanup(HANDLE hfile)
 	{
 		name.clear();
-		if (pfirstanimation) {
-			delete pfirstanimation;
+		if (pfirst_animation) {
+			delete pfirst_animation;
 		}
 		if (pnext_set) {
 			delete pnext_set;
 		}
-		pfirstanimation = NULL;
-		plastanimation = NULL;
+		pfirst_animation = NULL;
+		plast_animation = NULL;
 		pnext_set = NULL;
 	}
 
@@ -132,13 +142,13 @@ namespace ns_HoLin
 		ns_HoLin::sAnimation *p_animation = (ns_HoLin::sAnimation*)new ns_HoLin::sAnimation;
 
 		if (p_animation) {
-			if (plastanimation) {
-				plastanimation->pnextanimation = p_animation;
-				plastanimation = p_animation;
+			if (plast_animation) {
+				plast_animation->pnext_animation = p_animation;
+				plast_animation = p_animation;
 			}
 			else {
-				pfirstanimation = p_animation;
-				plastanimation = p_animation;
+				pfirst_animation = p_animation;
+				plast_animation = p_animation;
 			}
 		}
 		else
@@ -148,24 +158,24 @@ namespace ns_HoLin
 
 	void sAnimationSet::Insert(sAnimation *p)
 	{
-		if (plastanimation) {
-			plastanimation->pnextanimation = p;
-			plastanimation = p;
+		if (plast_animation) {
+			plast_animation->pnext_animation = p;
+			plast_animation = p;
 		}
 		else {
-			pfirstanimation = p;
-			plastanimation = p;
+			pfirst_animation = p;
+			plast_animation = p;
 		}
 	}
 
 	sAnimation* sAnimationSet::SearchForAnimation(std::string_view find_name)
 	{
-		if (pfirstanimation) {
-			sAnimation *p = pfirstanimation;
+		if (pfirst_animation) {
+			sAnimation *p = pfirst_animation;
 			while (p) {
 				if (p->name == find_name)
 					return p;
-				p = p->pnextanimation;
+				p = p->pnext_animation;
 			}
 		}
 		return (sAnimation*)nullptr;
@@ -173,7 +183,7 @@ namespace ns_HoLin
 
 	sAnimationSetList::sAnimationSetList()
 	{
-		animtickspersecond = 0;
+		anim_ticks_per_second = 0;
 		pfirst_set = nullptr;
 		plast_set = nullptr;
 		pfirst_animation = nullptr;
@@ -187,7 +197,7 @@ namespace ns_HoLin
 
 	void sAnimationSetList::Cleanup(HANDLE hfile)
 	{
-		animtickspersecond = 0;
+		anim_ticks_per_second = 0;
 		if (pfirst_set) {
 			delete pfirst_set;
 			pfirst_set = nullptr;
@@ -236,16 +246,37 @@ namespace ns_HoLin
 	{
 		if (pfirst_set) {
 			sAnimationSet *pset = pfirst_set;
-			sAnimation *panimation = pset->pfirstanimation;
+			sAnimation *panimation = pset->pfirst_animation;
 
 			while (pset) {
 				while (panimation) {
 					if (panimation->name == name)
 						return panimation;
-					panimation = panimation->pnextanimation;
+					panimation = panimation->pnext_animation;
 				}
 				pset = pset->pnext_set;
 			}
+		}
+		return (sAnimation*)nullptr;
+	}
+	
+	
+	sAnimation* sAnimationSetList::SearchAnimationsForString(std::string_view name)
+	{
+		sAnimationSet *p_set = pfirst_set;
+		sAnimation *p_anim = nullptr;
+		
+		while (p_set) {
+			p_anim = p_set->pfirst_animation;
+			while (p_anim) {
+				for (auto n : p_anim->list_of_objects) {
+					if (n == name) {
+						return p_anim;
+					}
+				}
+				p_anim = p_anim->pnext_animation;
+			}
+			p_set = p_set->pnext_set;
 		}
 		return (sAnimation*)nullptr;
 	}
@@ -256,7 +287,7 @@ namespace ns_HoLin
 		
 		if (p_animation) {
 			if (plast_animation) {
-				plast_animation->pnextanimation = p_animation;
+				plast_animation->pnext_animation = p_animation;
 				plast_animation = p_animation;
 			}
 			else {
@@ -273,7 +304,7 @@ namespace ns_HoLin
 	void sAnimationSetList::InsertAnimation(ns_HoLin::sAnimation *p)
 	{
 		if (plast_animation) {
-			plast_animation->pnextanimation = p;
+			plast_animation->pnext_animation = p;
 			plast_animation = p;
 		}
 		else {

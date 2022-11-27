@@ -7,6 +7,7 @@
 #include <Windows.h>
 
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -33,7 +34,7 @@ namespace ns_HoLin
 		// 2 for translate DirectX::XMFLOAT3
 		DWORD type_of_transform;
 		std::vector<ns_HoLin::sTimedFloatKeys> transformation_data;
-		sAnimation_Data *pnextanimation_data;
+		sAnimation_Data *pnext_animation_data;
 
 		sAnimation_Data();
 		sAnimation_Data(sAnimation_Data&&) = delete;
@@ -49,7 +50,7 @@ namespace ns_HoLin
 		std::string name;
 		std::vector<std::string> list_of_objects;
 		sAnimation_Data *pfirst_data, *plast_data;
-		sAnimation *pnextanimation;
+		sAnimation *pnext_animation;
 
 		sAnimation();
 		sAnimation(sAnimation&&) = delete;
@@ -60,12 +61,13 @@ namespace ns_HoLin
 		sAnimation& operator=(const sAnimation&) = delete;
 		sAnimation_Data* CreateAnimation_Data();
 		void InsertAnimation_Data(sAnimation_Data*);
+		BOOL SearchOwnerList(std::string_view);
 	};
 
 	struct sAnimationSet
 	{
 		std::string name;
-		sAnimation *pfirstanimation, *plastanimation;
+		sAnimation *pfirst_animation, *plast_animation;
 		sAnimationSet *pnext_set;
 
 		sAnimationSet();
@@ -82,7 +84,7 @@ namespace ns_HoLin
 
 	struct sAnimationSetList
 	{
-		DWORD animtickspersecond;
+		DWORD anim_ticks_per_second;
 		sAnimationSet *pfirst_set, *plast_set;
 		sAnimation *pfirst_animation, *plast_animation; // Any declared animation outside of AnimationSet is stored
 
@@ -96,6 +98,7 @@ namespace ns_HoLin
 		sAnimationSet* CreateAnimationSet();
 		sAnimationSet* GetLastAnimationSet() { return plast_set; } // check if returns nullptr
 		sAnimationSet* SearchForAnimationSet(std::string_view);
+		sAnimation* SearchAnimationsForString(std::string_view);
 		sAnimation* SearchForAnimation(std::string_view);
 		sAnimation* CreateAnimation(); // creates an animation object outside of an AnimationSet
 		void InsertAnimation(sAnimation*);

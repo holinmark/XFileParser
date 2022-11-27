@@ -15,7 +15,7 @@ namespace ns_HoLin
 	void sMeshFaces::Cleanup(HANDLE hfile)
 	{
 		number_of_indices = 0;
-		facevertexindices.clear();
+		face_vertex_indices.clear();
 	}
 
 	sMeshNormals::sMeshNormals()
@@ -30,25 +30,25 @@ namespace ns_HoLin
 	void sMeshNormals::Cleanup(HANDLE hfile)
 	{
 		normals.clear();
-		facenormals.clear();
+		face_normals.clear();
 	}
 
 	sIndexedColor::sIndexedColor(sIndexedColor &&other)
 	{
 		this->index = other.index;
-		this->indexColor = other.indexColor;
+		this->index_color = other.index_color;
 	}
 
 	sIndexedColor::sIndexedColor(const sIndexedColor &other)
 	{
 		this->index = other.index;
-		this->indexColor = other.indexColor;
+		this->index_color = other.index_color;
 	}
 
 	/*sIndexedColor& sIndexedColor::operator=(const sIndexedColor &other)
 	{
 		this->index = other.index;
-		this->indexColor = other.indexColor;
+		this->index_color = other.index_color;
 		return *this;
 	}*/
 
@@ -59,12 +59,12 @@ namespace ns_HoLin
 	
 	void sMeshVertexColors::Cleanup(HANDLE hfile)
 	{
-		vertexColors.clear();
+		vertex_colors.clear();
 	}
 	
 	sVertexDuplicationIndices::sVertexDuplicationIndices()
 	{
-		nIndices = 0;
+		number_of_indices = 0;
 		nOriginalVertices = 0;
 	}
 	
@@ -75,7 +75,7 @@ namespace ns_HoLin
 
 	void sVertexDuplicationIndices::Cleanup(HANDLE hfile)
 	{
-		nIndices = 0;
+		number_of_indices = 0;
 		nOriginalVertices = 0;
 		Indices.clear();
 	}
